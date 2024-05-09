@@ -1,6 +1,6 @@
 {
   "name": "also-json-server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A fork of json-server",
   "type": "module",
   "bin": {
@@ -26,17 +26,20 @@
   "author": "artman <artman328@gmail.com>",
   "license": "SEE LICENSE IN ./LICENSE",
   "repository": {
-		"type": "git",
-		"url": "git+https://github.com/typicode/json-server.git"
-	},
+    "type": "git",
+    "url": "git+https://github.com/typicode/json-server.git"
+  },
   "devDependencies": {
     "@sindresorhus/tsconfig": "^5.0.0",
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^20.11.7",
     "@typicode/eslint-config": "^1.2.0",
+    "chai": "^5.1.1",
+    "chai-http": "^4.4.0",
     "concurrently": "^8.2.2",
     "get-port": "^7.0.0",
     "husky": "^9.0.6",
+    "mocha": "^10.4.0",
     "tempy": "^3.1.0",
     "tsx": "^4.7.0",
     "type-fest": "^4.10.1",
