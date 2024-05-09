@@ -16,7 +16,7 @@ import { Observer } from './observer.js'
 import { Data } from './service.js'
 
 function help() {
-  console.log(`Usage: json-server [options] <file>
+  console.log(`Usage: also-json-server [options] <file>
 
 Options:
   -p, --port <port>  Port (default: 3000)
