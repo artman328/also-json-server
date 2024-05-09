@@ -1,14 +1,13 @@
-# json-server
+# also-json-server
 
-[![Node.js CI](https://github.com/typicode/json-server/actions/workflows/node.js.yml/badge.svg)](https://github.com/typicode/json-server/actions/workflows/node.js.yml)
+This is a fork of [json-server](https://github.com/typicode/json-server). Thanks to the author of the great project!
 
-> [!IMPORTANT]
-> Viewing alpha v1 documentation – usable but expect breaking changes. For stable version, see [here](https://github.com/typicode/json-server/tree/v0)
+This fork can handle many-to-many relationship in data.
 
 ## Install
 
 ```shell
-npm install json-server
+npm install also-json-server
 ```
 
 ## Usage
@@ -25,9 +24,44 @@ Create a `db.json` or `db.json5` file
     { "id": "1", "text": "a comment about post 1", "postId": "1" },
     { "id": "2", "text": "another comment about post 1", "postId": "1" }
   ],
-  "profile": {
-    "name": "typicode"
-  }
+  "contacts": [
+    { "id": "1", "name": "Tracy", "mobile": "(555)1234-1256" },
+    { "id": "2", "name": "Tina", "mobile": "(555)2367-1287" },
+    { "id": "3", "name": "Bill", "mobile": "(555)2589-1134" },
+    { "id": "4", "name": "Michael", "mobile": "(555)3345-2345" },
+    { "id": "5", "name": "Jackie", "mobile": "(555)1123-1123" }
+  ],
+  "groups": [
+    { "id": "1", "name": "Colegue" },
+    { "id": "2", "name": "Friend" },
+    { "id": "3", "name": "Family" },
+    { "id": "4", "name": "Business" }
+  ],
+  "contacts_groups": [
+    { "id": "1", "contactId": "1", "groupId": "1" },
+    { "id": "2", "contactId": "1", "groupId": "2" },
+    { "id": "3", "contactId": "2", "groupId": "1" },
+    { "id": "4", "contactId": "2", "groupId": "3" },
+    { "id": "5", "contactId": "3", "groupId": "1" },
+    { "id": "6", "contactId": "3", "groupId": "2" },
+    { "id": "7", "contactId": "3", "groupId": "3" }
+  ],
+  "members": [
+    {"id":"1","name":"Lexi","clubs":["1","3"]},
+    {"id":"2","name":"Ben","clubs":["1"]},
+    {"id":"3","name":"Billy","clubs":["2","3"]},
+    {"id":"1","name":"Jane","clubs":["1","5"]},
+    {"id":"1","name":"Jhon","clubs":["2","5"]},
+    {"id":"1","name":"Mark","clubs":["5"]},
+    {"id":"1","name":"Joe","clubs":["1","3"]}
+  ],
+  "clubs": [
+    {"id":"1","name":"club 1"},
+    {"id":"2","name":"club 2"},
+    {"id":"3","name":"club 3"},
+    {"id":"4","name":"club 4"},
+    {"id":"5","name":"club 5"}
+  ]
 }
 ```
 
@@ -38,16 +72,51 @@ Create a `db.json` or `db.json5` file
 ```json5
 {
   posts: [
-    { id: '1', title: 'a title', views: 100 },
-    { id: '2', title: 'another title', views: 200 },
+    { id: "1", title: "a title", views: 100 },
+    { id: "2", title: "another title", views: 200 }
   ],
   comments: [
-    { id: '1', text: 'a comment about post 1', postId: '1' },
-    { id: '2', text: 'another comment about post 1', postId: '1' },
+    { id: "1", text: "a comment about post 1", postId: "1" },
+    { id: "2", text: "another comment about post 1", postId: "1" }
   ],
-  profile: {
-    name: 'typicode',
-  },
+  contacts: [
+    { id: "1", name: "Tracy", mobile: "(555)1234-1256" },
+    { id: "2", name: "Tina", mobile: "(555)2367-1287" },
+    { id: "3", name: "Bill", mobile: "(555)2589-1134" },
+    { id: "4", name: "Michael", mobile: "(555)3345-2345" },
+    { id: "5", name: "Jackie", mobile: "(555)1123-1123" }
+  ],
+  groups: [
+    { id: "1", name: "Colegue" },
+    { id: "2", name: "Friend" },
+    { id: "3", name: "Family" },
+    { id: "4", name: "Business" }
+  ],
+  contacts_groups: [
+    { id: "1", contactId: "1", groupId: "1" },
+    { id: "2", contactId: "1", groupId: "2" },
+    { id: "3", contactId: "2", groupId: "1" },
+    { id: "4", contactId: "2", groupId: "3" },
+    { id: "5", contactId: "3", groupId: "1" },
+    { id: "6", contactId: "3", groupId: "2" },
+    { id: "7", contactId: "3", groupId: "3" }
+  ],
+  members: [
+    {id:"1",name:"Lexi",clubs:["1","3"]},
+    {id:"2",name:"Ben",clubs:["1"]},
+    {id:"3",name:"Billy",clubs:["2","3"]},
+    {id:"1",name:"Jane",clubs:["1","5"]},
+    {id:"1",name:"Jhon",clubs:["2","5"]},
+    {id:"1",name:"Mark",clubs:["5"]},
+    {id:"1",name:"Joe",clubs:["1","3"]}
+  ],
+  clubs: [
+    {id:"1",name:"club 1"},
+    {id:"2",name:"club 2"},
+    {id:"3",name:"club 3"},
+    {id:"4",name:"club 4"},
+    {id:"5",name:"club 5"}
+  ]
 }
 ```
 
@@ -58,7 +127,7 @@ You can read more about JSON5 format [here](https://github.com/json5/json5).
 Pass it to JSON Server CLI
 
 ```shell
-$ npx json-server db.json
+$ npx also-json-server db.json
 ```
 
 Get a REST API
@@ -71,27 +140,8 @@ $ curl http://localhost:3000/posts/1
 }
 ```
 
-Run `json-server --help` for a list of options
+Run `also-json-server --help` for a list of options
 
-## Sponsors ✨
-
-|                                                                                    Sponsors                                                                                    |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|                         <a href="https://mockend.com/" target="_blank"><img src="https://jsonplaceholder.typicode.com/mockend.svg" height="80px"></a>                          |
-| <a href="https://www.storyblok.com/" target="_blank"><img src="https://github.com/typicode/json-server/assets/5502029/c6b10674-4ada-4616-91b8-59d30046b45a" height="40px"></a> |
-|  <a href="https://betterstack.com/" target="_blank"><img src="https://github.com/typicode/json-server/assets/5502029/44679f8f-9671-470d-b77e-26d90b90cbdc" height="40px"></a>  |
-| <a href="https://www.globalsoftwarecompanies.com" target="_blank"><img src="https://github.com/typicode/json-server/assets/5502029/d0bb2e9b-9b74-4d91-9c9e-f3c87e152918" height="40px"></a>  |
-| <a href="https://beeceptor.com/?utm_source=json-server"><img src="https://github.com/typicode/json-server/assets/5502029/57b852a6-60b9-426b-986e-a148e82783c2" height="40px"></a> |
-
-
-[Become a sponsor and have your company logo here](https://github.com/users/typicode/sponsorship)
-
-## Sponsorware
-
-> [!NOTE]
-> This project uses the [Fair Source License](https://fair.io/). Only organizations with 3+ users are kindly asked to contribute a small amount through sponsorship [sponsor](https://github.com/sponsors/typicode) for usage. __This license helps keep the project sustainable and healthy, benefiting everyone.__
-> 
-> For more information, FAQs, and the rationale behind this, visit [https://fair.io/](https://fair.io/).
 
 ## Routes
 
@@ -171,9 +221,26 @@ GET /foo?arr[0]=bar
 ### Embed
 
 ```
+# one to many: embed "many" side
 GET /posts?_embed=comments
+
+# one 2 many: embed "one" side
 GET /comments?_embed=post
+
+# many to many: through a list of ids of another side in one side (higher priority than an intermediate list)
+GET /members?_embed=clubs
+GET /clubs?_embed=members 
+
+# many to many: through an intermediate list
+# name can be "anyside_anyside", like "contacts_groups"
+# or "groups_contacts"
+GET /contacts?_embed=groups
+GET /groups?_embed=contacts
+
+
 ```
+
+
 
 ## Delete
 

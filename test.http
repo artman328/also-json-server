@@ -1,4 +1,11 @@
-GET http://localhost:3000/contacts?_start=2&_limit=2&_embed=groups
+### 
+GET http://localhost:3000/posts?_embed=comments
+
+###
+GET http://localhost:3000/comments?_embed=post
+
+###
+GET http://localhost:3000/contacts?_embed=groups
 
 ###
 
