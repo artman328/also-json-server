@@ -1,0 +1,18 @@
+GET http://localhost:3000/contacts?_start=2&_limit=2&_embed=groups
+
+###
+
+GET http://localhost:3000/contacts?_embed=phones
+
+### 
+GET http://localhost:3000/groups?_embed=contacts
+
+
+###
+GET http://localhost:3000/phones/1?_embed=contact
+
+###
+GET http://localhost:3000/members?_embed=clubs
+
+###
+GET http://localhost:3000/clubs?_embed=members

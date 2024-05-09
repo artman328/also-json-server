@@ -51,6 +51,34 @@ function ensureArray(arg: string | string[] = []): string[] {
   return Array.isArray(arg) ? arg : [arg]
 }
 
+// function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
+//   if (inflection.singularize(related) === related) {
+//     const relatedData = db.data[inflection.pluralize(related)] as Item[]
+//     if (!relatedData) {
+//       return item
+//     }
+//     const foreignKey = `${related}Id`
+//     const relatedItem = relatedData.find((relatedItem: Item) => {
+//       return relatedItem['id'] === item[foreignKey]
+//     })
+//     return { ...item, [related]: relatedItem }
+//   }
+//   const relatedData: Item[] = db.data[related] as Item[]
+
+//   if (!relatedData) {
+//     return item
+//   }
+
+//   const foreignKey = `${inflection.singularize(name)}Id`
+//   const relatedItems = relatedData.filter(
+//     (relatedItem: Item) => relatedItem[foreignKey] === item['id'],
+//   )
+
+//   return { ...item, [related]: relatedItems }
+// }
+ //clubs?_embed=members
+//  name         related [clubs]
+
 function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
   if (inflection.singularize(related) === related) {
     const relatedData = db.data[inflection.pluralize(related)] as Item[]
@@ -63,19 +91,68 @@ function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
     })
     return { ...item, [related]: relatedItem }
   }
-  const relatedData: Item[] = db.data[related] as Item[]
-
-  if (!relatedData) {
-    return item
+  // many-2-many: Try to get ${related} property in ${name}
+  const relatedProperty = `${related}`;
+  if (item[relatedProperty] && Array.isArray(item[relatedProperty])) {
+    // If the ${name} object has a property named ${related}, which should be an array of IDs
+    const relatedIds = item[relatedProperty] as string[];
+    const relatedItems = (db.data[related] as Item[]).filter((relatedItem: Item) => relatedIds.includes(relatedItem['id'] as string));
+    return { ...item, [related]: relatedItems };
+  }
+  // many-2-many: Try to find ${name} property in ${related}
+  const _relatedItems =  db.data[related] as Item[]
+  if(_relatedItems){
+    let relatedItems:(Item | undefined)[] = []
+    _relatedItems.forEach(e=>{
+      if(e[name] && (e[name] as Array<string>).indexOf(item['id'] as string)!==-1){
+        relatedItems.push(e)
+      }
+    })
+    if(relatedItems.length>0) {
+      let _items = structuredClone(relatedItems)
+      _items.forEach(e=>{
+        if(e) delete e[name]
+      })
+      return { ...item, [related]: _items };
+    }
   }
 
-  const foreignKey = `${inflection.singularize(name)}Id`
+  // Check if there is an intermediate table named like primary_related
+  const intermediateTable1 = `${name}_${related}`;
+  const intermediateTable2 = `${related}_${name}`;
+  
+  let intermediateData = db.data[intermediateTable1] as Item[];
+  if (!intermediateData) {
+    intermediateData = db.data[intermediateTable2] as Item[];
+  }
+  if (intermediateData) {
+    // Get related items through the intermediate table
+    const relatedItems = intermediateData
+      .filter((intermediateItem: Item) => intermediateItem[`${inflection.singularize(name)}Id`] === item['id'])
+      .map((intermediateItem: Item) => {
+        // Find related item using related ID
+        const relatedItem = (db.data[related] as Item[]).find((relatedItem: Item) => relatedItem['id'] === intermediateItem[`${inflection.singularize(related)}Id`]);
+        return relatedItem;
+      });
+    return { ...item, [related]: relatedItems };
+  }
+  
+  // If there is no intermediate table, proceed with original logic
+  const relatedData = db.data[related] as Item[];
+  if (!relatedData) {
+    return item;
+  }
+
+  const foreignKey = `${inflection.singularize(name)}Id`;
   const relatedItems = relatedData.filter(
     (relatedItem: Item) => relatedItem[foreignKey] === item['id'],
-  )
+  );
 
-  return { ...item, [related]: relatedItems }
+  return { ...item, [related]: relatedItems };
 }
+
+
+
 
 function nullifyForeignKey(db: Low<Data>, name: string, id: string) {
   const foreignKey = `${inflection.singularize(name)}Id`

@@ -1,10 +1,10 @@
 {
-  "name": "json-server",
-  "version": "1.0.0-alpha.23",
-  "description": "",
+  "name": "also-json-server",
+  "version": "0.0.1",
+  "description": "A fork of json-server",
   "type": "module",
   "bin": {
-    "json-server": "lib/bin.js"
+    "also-json-server": "lib/bin.js"
   },
   "types": "lib",
   "files": [
@@ -23,7 +23,7 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [],
-  "author": "typicode <typicode@gmail.com>",
+  "author": "artman <artman328@gmail.com>",
   "license": "SEE LICENSE IN ./LICENSE",
   "repository": {
 		"type": "git",
