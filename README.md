@@ -47,21 +47,24 @@ Create a `db.json` or `db.json5` file
     { "id": "7", "contactId": "3", "groupId": "3" }
   ],
   "members": [
-    {"id":"1","name":"Lexi","clubs":["1","3"]},
-    {"id":"2","name":"Ben","clubs":["1"]},
-    {"id":"3","name":"Billy","clubs":["2","3"]},
-    {"id":"1","name":"Jane","clubs":["1","5"]},
-    {"id":"1","name":"Jhon","clubs":["2","5"]},
-    {"id":"1","name":"Mark","clubs":["5"]},
-    {"id":"1","name":"Joe","clubs":["1","3"]}
+    { "id": "1", "name": "Lexi", "clubs": ["1", "3"] },
+    { "id": "2", "name": "Ben", "clubs": ["1"] },
+    { "id": "3", "name": "Billy", "clubs": ["2", "3"] },
+    { "id": "1", "name": "Jane", "clubs": ["1", "5"] },
+    { "id": "1", "name": "Jhon", "clubs": ["2", "5"] },
+    { "id": "1", "name": "Mark", "clubs": ["5"] },
+    { "id": "1", "name": "Joe", "clubs": ["1", "3"] }
   ],
   "clubs": [
-    {"id":"1","name":"club 1"},
-    {"id":"2","name":"club 2"},
-    {"id":"3","name":"club 3"},
-    {"id":"4","name":"club 4"},
-    {"id":"5","name":"club 5"}
-  ]
+    { "id": "1", "name": "club 1" },
+    { "id": "2", "name": "club 2" },
+    { "id": "3", "name": "club 3" },
+    { "id": "4", "name": "club 4" },
+    { "id": "5", "name": "club 5" }
+  ],
+  "profile": {
+    "name": "typicode"
+  }
 }
 ```
 
@@ -73,24 +76,24 @@ Create a `db.json` or `db.json5` file
 {
   posts: [
     { id: "1", title: "a title", views: 100 },
-    { id: "2", title: "another title", views: 200 }
+    { id: "2", title: "another title", views: 200 },
   ],
   comments: [
     { id: "1", text: "a comment about post 1", postId: "1" },
-    { id: "2", text: "another comment about post 1", postId: "1" }
+    { id: "2", text: "another comment about post 1", postId: "1" },
   ],
   contacts: [
     { id: "1", name: "Tracy", mobile: "(555)1234-1256" },
     { id: "2", name: "Tina", mobile: "(555)2367-1287" },
     { id: "3", name: "Bill", mobile: "(555)2589-1134" },
     { id: "4", name: "Michael", mobile: "(555)3345-2345" },
-    { id: "5", name: "Jackie", mobile: "(555)1123-1123" }
+    { id: "5", name: "Jackie", mobile: "(555)1123-1123" },
   ],
   groups: [
     { id: "1", name: "Colegue" },
     { id: "2", name: "Friend" },
     { id: "3", name: "Family" },
-    { id: "4", name: "Business" }
+    { id: "4", name: "Business" },
   ],
   contacts_groups: [
     { id: "1", contactId: "1", groupId: "1" },
@@ -99,24 +102,27 @@ Create a `db.json` or `db.json5` file
     { id: "4", contactId: "2", groupId: "3" },
     { id: "5", contactId: "3", groupId: "1" },
     { id: "6", contactId: "3", groupId: "2" },
-    { id: "7", contactId: "3", groupId: "3" }
+    { id: "7", contactId: "3", groupId: "3" },
   ],
   members: [
-    {id:"1",name:"Lexi",clubs:["1","3"]},
-    {id:"2",name:"Ben",clubs:["1"]},
-    {id:"3",name:"Billy",clubs:["2","3"]},
-    {id:"1",name:"Jane",clubs:["1","5"]},
-    {id:"1",name:"Jhon",clubs:["2","5"]},
-    {id:"1",name:"Mark",clubs:["5"]},
-    {id:"1",name:"Joe",clubs:["1","3"]}
+    { id: "1", name: "Lexi", clubs: ["1", "3"] },
+    { id: "2", name: "Ben", clubs: ["1"] },
+    { id: "3", name: "Billy", clubs: ["2", "3"] },
+    { id: "1", name: "Jane", clubs: ["1", "5"] },
+    { id: "1", name: "Jhon", clubs: ["2", "5"] },
+    { id: "1", name: "Mark", clubs: ["5"] },
+    { id: "1", name: "Joe", clubs: ["1", "3"] },
   ],
   clubs: [
-    {id:"1",name:"club 1"},
-    {id:"2",name:"club 2"},
-    {id:"3",name:"club 3"},
-    {id:"4",name:"club 4"},
-    {id:"5",name:"club 5"}
-  ]
+    { id: "1", name: "club 1" },
+    { id: "2", name: "club 2" },
+    { id: "3", name: "club 3" },
+    { id: "4", name: "club 4" },
+    { id: "5", name: "club 5" },
+  ],
+  profile: {
+    name: "typicode",
+  },
 }
 ```
 
@@ -141,7 +147,6 @@ $ curl http://localhost:3000/posts/1
 ```
 
 Run `also-json-server --help` for a list of options
-
 
 ## Routes
 
@@ -229,7 +234,7 @@ GET /comments?_embed=post
 
 # many to many: through a list of ids of another side in one side (higher priority than an intermediate list)
 GET /members?_embed=clubs
-GET /clubs?_embed=members 
+GET /clubs?_embed=members
 
 # many to many: through an intermediate list
 # name can be "anyside_anyside", like "contacts_groups"
@@ -239,8 +244,6 @@ GET /groups?_embed=contacts
 
 
 ```
-
-
 
 ## Delete
 
