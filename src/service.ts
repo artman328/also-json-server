@@ -153,7 +153,6 @@ function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
 
 
 
-
 function nullifyForeignKey(db: Low<Data>, name: string, id: string) {
   const foreignKey = `${inflection.singularize(name)}Id`
 
@@ -172,6 +171,29 @@ function nullifyForeignKey(db: Low<Data>, name: string, id: string) {
   })
 }
 
+function deleteManyToManyRel(db: Low<Data>, name: string, id:string){
+  Object.entries(db.data).forEach(([key, items]) => {
+    // through intermediate list
+    if(key.indexOf(`_${name}`)!==-1 || key.indexOf(`${name}_`)!==-1){
+      if (Array.isArray(items)) {
+        db.data[key] = items.filter((item) => item[`${inflection.singularize(name)}Id`] !== null)
+      }      
+    }
+    // through embeded list
+    else{
+      if (Array.isArray(items)) {
+        let _ids : string[] = []
+        items.forEach((e:Item)=>{
+          if(e[name] && Array.isArray(e[name])){
+            _ids = (e[name] as Array<string>).filter(_id=>_id!==id)
+            e[name] = _ids
+          }
+        })
+      }
+    }
+  })
+}
+
 function deleteDependents(db: Low<Data>, name: string, dependents: string[]) {
   const foreignKey = `${inflection.singularize(name)}Id`
 
@@ -184,6 +206,7 @@ function deleteDependents(db: Low<Data>, name: string, dependents: string[]) {
       db.data[key] = items.filter((item) => item[foreignKey] !== null)
     }
   })
+  // todo: delete records from intermediate list (many-2-many)
 }
 
 function randomId(): string {
@@ -213,6 +236,8 @@ function fixAllItemsIds(data: Data) {
 export class Service {
   #db: Low<Data>
 
+  user: Item | undefined = undefined 
+
   constructor(db: Low<Data>) {
     fixAllItemsIds(db.data)
     this.#db = db
@@ -224,6 +249,44 @@ export class Service {
 
   has(name: string): boolean {
     return Object.prototype.hasOwnProperty.call(this.#db?.data, name)
+  }
+
+  login(username:string, password: string): Record<string,any> {
+    let result = false
+    let user :Item = {}
+    const users = this.#db.data["users"] as Item[]
+    if(users) {
+      const q_users = users.filter(u=>u["username"]==username && u["password"]==password)
+      console.log("Q_Users:",q_users);
+      if(q_users.length>0){
+        result = true
+        user = q_users[0] as Item
+      }
+    } 
+    return {
+      result,
+      user
+    }
+  }
+
+  checkToken(token: string): Record<string,any> {
+    let result = false
+    let user: Item = {}
+    const users = this.#db.data["users"] as Item[]
+    console.log("Users:",users);
+    
+    if(users){
+      const q_users = users.filter(u=>u["token"]===token)
+      // console.log("Q_Users:",q_users);
+      if(q_users.length>0){
+        result = true
+        user = q_users[0] as Item
+      }
+    }
+    return {
+      result,
+      user
+    }
   }
 
   findById(
@@ -511,9 +574,16 @@ export class Service {
     const index = items.indexOf(item)
     items.splice(index, 1)[0]
 
+    // for one-to-many
     nullifyForeignKey(this.#db, name, id)
     const dependents = ensureArray(dependent)
     deleteDependents(this.#db, name, dependents)
+
+    // for many-to-many
+    deleteManyToManyRel(this.#db,name,id)
+
+
+
 
     await this.#db.write()
     return item

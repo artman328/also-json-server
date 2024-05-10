@@ -29,6 +29,7 @@ Options:
 
 // Parse args
 function args(): {
+  auth: boolean
   file: string
   port: number
   host: string
@@ -37,6 +38,9 @@ function args(): {
   try {
     const { values, positionals } = parseArgs({
       options: {
+        auth: {
+          type: 'boolean'
+        },
         port: {
           type: 'string',
           short: 'p',
@@ -96,6 +100,7 @@ function args(): {
 
     // App args and options
     return {
+      auth: values.auth as boolean,
       file: positionals[0] ?? '',
       port: parseInt(values.port as string),
       host: values.host as string,
@@ -112,7 +117,7 @@ function args(): {
   }
 }
 
-const { file, port, host, static: staticArr } = args()
+const { auth, file, port, host, static: staticArr } = args()
 
 if (!existsSync(file)) {
   console.log(chalk.red(`File ${file} not found`))
@@ -140,7 +145,7 @@ const db = new Low<Data>(observer, {})
 await db.read()
 
 // Create app
-const app = createApp(db, { logger: false, static: staticArr })
+const app = createApp(db, { logger: false, static: staticArr },auth)
 
 function logRoutes(data: Data) {
   console.log(chalk.bold('Endpoints:'))
@@ -170,6 +175,7 @@ app.listen(port, () => {
   console.log(
     [
       chalk.bold(`JSON Server started on PORT :${port}`),
+      chalk.gray(auth?'Using auth...':""),
       chalk.gray('Press CTRL-C to stop'),
       chalk.gray(`Watching ${file}...`),
       '',
