@@ -28,11 +28,11 @@ export function createApp(
   options: AppOptions = {},
   auth: boolean,
   path: string,
-  object: boolean
+  return_object: boolean
 ) {
   // Create service
   const service = new Service(db);
-  service.return_object = object
+  service.return_object = return_object
 
   // Create app
   const app = new App();
@@ -77,9 +77,11 @@ export function createApp(
   // });
 
   app.use((req, res, next) => {
-    const isLoginRequest = req.url.includes("/login");
+    console.log(req.url);
     
-    if (isLoginRequest) {
+    const canGoThrough = req.url.includes("/auth/login") || req.url==="/";
+    
+    if (canGoThrough) {
       next();
       return;
     }
@@ -166,7 +168,7 @@ export function createApp(
   });
 
   app.get("/", (_req, res) =>
-    res.send(eta.render("index.html", { data: db.data }))
+    res.send(eta.render("index.html", { data: db.data, path }))
   );
 
   app.get(`${path}/:name`, (req, res, next) => {

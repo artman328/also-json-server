@@ -80,7 +80,7 @@
     <% Object.entries(it.data).forEach(function([name]) { %>
       <ul>
         <li>
-          <a href="<%= name %>">/<%= name %></a>
+          <a href="<%= it.path %>/<%= name %>"><%= it.path %>/<%= name %></a>
           <span>
             <% if (Array.isArray(it.data[name])) { %>
               - <%= it.data[name].length %>

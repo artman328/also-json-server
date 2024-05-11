@@ -51,34 +51,6 @@ function ensureArray(arg: string | string[] = []): string[] {
   return Array.isArray(arg) ? arg : [arg];
 }
 
-// function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
-//   if (inflection.singularize(related) === related) {
-//     const relatedData = db.data[inflection.pluralize(related)] as Item[]
-//     if (!relatedData) {
-//       return item
-//     }
-//     const foreignKey = `${related}Id`
-//     const relatedItem = relatedData.find((relatedItem: Item) => {
-//       return relatedItem['id'] === item[foreignKey]
-//     })
-//     return { ...item, [related]: relatedItem }
-//   }
-//   const relatedData: Item[] = db.data[related] as Item[]
-
-//   if (!relatedData) {
-//     return item
-//   }
-
-//   const foreignKey = `${inflection.singularize(name)}Id`
-//   const relatedItems = relatedData.filter(
-//     (relatedItem: Item) => relatedItem[foreignKey] === item['id'],
-//   )
-
-//   return { ...item, [related]: relatedItems }
-// }
-//clubs?_embed=members
-//  name         related [clubs]
-
 function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
   if (inflection.singularize(related) === related) {
     const relatedData = db.data[inflection.pluralize(related)] as Item[];
