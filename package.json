@@ -1,6 +1,6 @@
 {
   "name": "also-json-server",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A fork of json-server",
   "type": "module",
   "bin": {
@@ -27,7 +27,7 @@
   "license": "SEE LICENSE IN ./LICENSE",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/typicode/json-server.git"
+    "url": "git+https://github.com/artman328/also-json-server.git"
   },
   "devDependencies": {
     "@sindresorhus/tsconfig": "^5.0.0",

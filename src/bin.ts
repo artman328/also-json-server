@@ -20,15 +20,17 @@ function help() {
   console.log(`Usage: also-json-server [options] <file>
 
 Options:
-  -p, --port <port>     Port (default: 3000)
-  -h, --host <host>     Host (default: localhost)
-  -s, --static <dir>    Static files directory (multiple allowed)
-  -a, --auth            Use authorization to access
-  -P, --path            Add partial path to url to mimic versioning, like /api/v1
-  -o, --return-object   Return result as an object with status code, message and data
-  -t  --try-server      Generate a data file to try the server
-  --help                Show this message
-  --version             Show version number
+  -p, --port <port>      Port (default: 3000)
+  -h, --host <host>      Host (default: localhost)
+  -s, --static <dir>     Static files directory (multiple allowed)
+  -a, --auth             Use authorization to access
+  -P, --path <path>      Add partial path to customize url, like /api/v1
+  -o, --return-object    Return result as an object with status code, message and data
+  -t  --try-server       Generate a data file to try the server
+  -d  --delay <auto|ms>  Delay the response for some milliseconds to mimic network latency,
+                         "auto" means the time will be in 300~1000 ms randomly for each request.     
+  --help                 Show this message
+  --version              Show version number
 `);
 }
 
@@ -36,9 +38,15 @@ const test_data = {
   users: [
     {
       id: "1",
-      username: "user",
-      password: "pass",
-      token: "12dea96fec20593566ab75692c9949596833adc9",
+      username: "User1",
+      password: "UserPass1",
+      token: "3604ab439517b1bc0161a8debd461d8461863b99",
+    },
+    {
+      id: "2",
+      username: "User2",
+      password: "UserPass2",
+      token: "aeabb98dde7f53034dc8946edb0816f3511dedf2",
     },
   ],
   posts: [
@@ -57,7 +65,7 @@ const test_data = {
     { id: "5", name: "Jackie", mobile: "(555)1123-1123" },
   ],
   groups: [
-    { id: "1", name: "Colegue" },
+    { id: "1", name: "Collegue" },
     { id: "2", name: "Friend" },
     { id: "3", name: "Family" },
     { id: "4", name: "Business" },
@@ -87,6 +95,9 @@ const test_data = {
     { id: "4", name: "club 4" },
     { id: "5", name: "club 5" },
   ],
+  profile: {
+    name: "typicode",
+  },
 };
 
 // Parse args
@@ -98,6 +109,7 @@ function args(): {
   path: string;
   return_object: boolean;
   try_server: boolean;
+  delay: string;
   static: string[];
 } {
   try {
@@ -105,7 +117,7 @@ function args(): {
       options: {
         auth: {
           type: "boolean",
-          short: "a"
+          short: "a",
         },
         port: {
           type: "string",
@@ -124,11 +136,15 @@ function args(): {
         },
         "return-object": {
           type: "boolean",
-          short: "o"
+          short: "o",
         },
         "try-server": {
           type: "boolean",
-          short: "t"
+          short: "t",
+        },
+        delay: {
+          type: "string",
+          short: "d",
         },
         static: {
           type: "string",
@@ -191,10 +207,15 @@ function args(): {
       try_server: values["try-server"] ?? false,
       return_object: values["return-object"] as boolean,
       host: values.host as string,
+      delay: values.delay as string,
       static: values.static as string[],
     };
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
+    if (
+      (e as NodeJS.ErrnoException).code === "ERR_PARSE_ARGS_UNKNOWN_OPTION" ||
+      (e as NodeJS.ErrnoException).code ===
+        "ERR_PARSE_ARGS_INVALID_OPTION_VALUE"
+    ) {
       console.log(
         chalk.red((e as NodeJS.ErrnoException).message.split(".")[0])
       );
@@ -214,14 +235,15 @@ const {
   path,
   return_object,
   try_server,
+  delay,
   static: staticArr,
 } = args();
 
-let data_file = try_server?"also-json-server-test-db.json5":file
+let data_file = try_server ? "also-json-server-test-db.json5" : file;
 
 if (try_server) {
   try {
-    fs.writeFileSync(data_file, JSON5.stringify(test_data,null,4));
+    fs.writeFileSync(data_file, JSON5.stringify(test_data, null, 4));
   } catch (err) {
     console.error("Write test db file failed.", err);
     process.exit(1);
@@ -232,8 +254,6 @@ if (!try_server && !existsSync(data_file)) {
   console.log(chalk.red(`Data file ${data_file} not found`));
   process.exit(1);
 }
-
-
 
 // Handle empty string JSON file
 if (readFileSync(data_file, "utf-8").trim() === "") {
@@ -261,7 +281,8 @@ const app = createApp(
   { logger: false, static: staticArr },
   auth,
   path,
-  return_object
+  return_object,
+  delay
 );
 
 function logRoutes(data: Data) {
@@ -274,7 +295,9 @@ function logRoutes(data: Data) {
   }
   console.log(
     auth
-      ? `POST ${chalk.gray(`http://${host}:${port}${path}/${chalk.blue("auth/login")}`)}\n`
+      ? `POST ${chalk.gray(
+          `http://${host}:${port}${path}/${chalk.blue("auth/login")}`
+        )}\n`
       : "",
     Object.keys(data)
       .map(

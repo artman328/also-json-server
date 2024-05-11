@@ -10,9 +10,23 @@ This fork can handle many-to-many relationship in data.
 npm install -g also-json-server
 ```
 
+## Try the server
+
+Before you create your data file, you can let the server to generate a data file for you to try the server. The generated file name will be `also-json-server-test-db.json5`.
+The generated data will be like the example below.
+```
+also-json-server --try-server
+```
+
+The server will start and you can try any request you want. 
+
+Each time you use this option to start the server, you will get a brand new data file to try.
+
+
 ## Usage
 
-Create a `db.json` or `db.json5` file
+Create your data file `<data_file_name>.json` or `<data_file_name>.json5` file like below.
+(or you can use `--try-server` option to generate the data to try the server first.)
 
 ```json
 {
@@ -66,7 +80,7 @@ Create a `db.json` or `db.json5` file
     { "id": "3", "name": "Billy", "clubs": ["2", "3"] },
     { "id": "4", "name": "Jane", "clubs": ["1", "5"] },
     { "id": "5", "name": "Jhon", "clubs": ["2", "5"] },
-    { "id": "6", "name": "Mark", "clubs": ["5"] },
+    { "id": "6", "name": "Mark", "clubs": [] },
     { "id": "7", "name": "Joe", "clubs": ["1", "3"] }
   ],
   "clubs": [
@@ -138,7 +152,7 @@ Create a `db.json` or `db.json5` file
     { id: "3", name: "Billy", clubs: ["2", "3"] },
     { id: "4", name: "Jane", clubs: ["1", "5"] },
     { id: "5", name: "Jhon", clubs: ["2", "5"] },
-    { id: "6", name: "Mark", clubs: ["5"] },
+    { id: "6", name: "Mark", clubs: [] },
     { id: "7", name: "Joe", clubs: ["1", "3"] },
   ],
   clubs: [
@@ -161,7 +175,7 @@ You can read more about JSON5 format [here](https://github.com/json5/json5).
 Pass it to JSON Server CLI
 
 ```shell
-$ npx also-json-server db.json
+$ also-json-server <data_file_name>.json
 ```
 
 Get a REST API
@@ -189,7 +203,7 @@ Use POST "/auth/login" to login to get a user's token.
 
 ## Routes
 
-Based on the example `db.json`, you'll get the following routes:
+Based on the example `<data_file_name>.json`, you'll get the following routes:
 
 ```
 GET    /posts
@@ -207,6 +221,56 @@ GET   /profile
 PUT   /profile
 PATCH /profile
 ```
+
+You can use `--path <path>` to add partial path to customize you url.
+```
+also-json-server --path /api/v1
+``` 
+
+will generate the routes like:
+
+```
+GET    api/v1/posts
+GET    api/v1/posts/:id
+POST   api/v1/posts
+PUT    api/v1/posts/:id
+PATCH  api/v1/posts/:id
+DELETE api/v1/posts/:id
+
+# Same for other collections
+```
+
+## Delay Responses
+
+You can use `--delay <auto|ms>` to delay a response for each request to mimic network letancy.
+
+`auto` will delay each response from 300ms to 1000ms randomly.
+
+
+## Response format
+
+By default, requests will return just data.
+
+```json
+[
+  {"id": "1", "name": "Lexi"},
+  ...
+]
+```
+
+You can use `--return-object` to tell the server to return an object with `statusCode`, `message` and the data properties.
+
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": [
+    {"id": "1", "name": "Lexi"},
+    ...
+  ]
+}
+```
+
 
 ## Params
 

@@ -13,6 +13,9 @@ import { Data, isItem, Service } from "./service.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env["NODE_ENV"] === "production";
 
+const randInt = (min:number, max:number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+
 export type AppOptions = {
   logger?: boolean;
   static?: string[];
@@ -28,7 +31,8 @@ export function createApp(
   options: AppOptions = {},
   auth: boolean,
   path: string,
-  return_object: boolean
+  return_object: boolean,
+  delay: string
 ) {
   // Create service
   const service = new Service(db);
@@ -37,50 +41,24 @@ export function createApp(
   // Create app
   const app = new App();
 
-  // app.use((req, res, next) => {
-  //   if (req.url.indexOf("/login") !== -1) {
-  //     next();
-  //   } else if (auth) {
-  //     let token = "";
-  //     const bearer = req.headers["authorization"] as string;
-  //     console.log(req.headers);
-  //     if (bearer && bearer.split(" ").length > 1) {
-  //       token = bearer.split(" ")[1] as string;
-  //       console.log("Token:",token);
-        
-  //     }
-  //     if (!token) {
-  //       token = req.query["_token"] as string;
-  //       delete req.query["_token"];
-  //     }
-  //     if (!token) {
-  //       res.statusCode = 401;
-  //       res.send({
-  //         code: 401,
-  //         msg: "Unauthorized",
-  //       });
-  //     } else {
-  //       //todo: check token
-  //       const retv = service.checkToken(token)
-  //       if(!retv["result"]){
-  //         res.send({
-  //           code: 401,
-  //           msg: "Unauthorized",
-  //         });
-  //       }
-  //       else{
-  //         service.user = retv["user"]
-  //         next();
-  //       }
-  //     }
-  //   }
-  // });
+ 
+
+    
+  app.use((_req, _res, next)=>{
+    let sleep_time = 0
+    if(delay && delay==="auto"){
+      sleep_time = randInt(300,1000)
+    }
+    else{
+      sleep_time = parseInt(delay)?parseInt(delay):0
+    }
+    setTimeout(next,sleep_time)
+  })
+
+
 
   app.use((req, res, next) => {
-    console.log(req.url);
-    
     const canGoThrough = req.url.includes("/auth/login") || req.url==="/";
-    
     if (canGoThrough) {
       next();
       return;

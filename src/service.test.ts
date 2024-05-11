@@ -481,50 +481,45 @@ await test('patchById', async () => {
   assert.equal(await service.patchById(POSTS, UNKNOWN_ID, post), undefined)
 })
 
-await test('destroy', async () => {
+await test('destroy: destroyed a post will cause foreign keys in comments being set to null', async () => {
   reset()
   let prevLength = Number(db.data?.[POSTS]?.length) || 0
   await service.destroyById(POSTS, post1.id)
   assert.equal(db.data?.[POSTS]?.length, prevLength - 1)
   assert.deepEqual(db.data?.[COMMENTS], [{ ...comment1, postId: null }])
-
+})
+await test('destroy: destroyed a post with dependents will delete related comments', async () => {
   reset()
-  prevLength = db.data?.[POSTS]?.length || 0
+  let prevLength = Number(db.data?.[POSTS]?.length) || 0
   await service.destroyById(POSTS, post1.id, [COMMENTS])
   assert.equal(db.data[POSTS].length, prevLength - 1)
   assert.equal(db.data[COMMENTS].length, 0)
 
   assert.equal(await service.destroyById(UNKNOWN_RESOURCE, post1.id), undefined)
   assert.equal(await service.destroyById(POSTS, UNKNOWN_ID), undefined)
-
-  // test destory one side (contatcs) of many-to-many rel will automatically 
-  // remove the related records
-  // from intermediate list
+})
+await test('destroy: destroyed a contact/group will remove many-to-many (intermediate table) relationship automatically', async () => {
   reset()
-  prevLength = Number(db.data?.[CONTACTS]?.length) || 0
+  let prevLength = Number(db.data?.[CONTACTS]?.length) || 0
   await service.destroyById(CONTACTS,contact1.id)
   assert.equal(db.data[CONTACTS].length, prevLength - 1)
   assert.equal((db.data['contacts_groups'] as Item[]).filter(e=>e.contactId===contact1.id).length,0)
 
-  // test destory another side (groups) of many-to-many rel will automatically 
-  // remove the related records
-  // from intermediate list
   reset()
   prevLength = Number(db.data?.[GROUPS]?.length) || 0
   await service.destroyById(GROUPS,group1.id)
   assert.equal(db.data[GROUPS].length, prevLength - 1)
   assert.equal((db.data['contacts_groups'] as Item[]).filter(e=>e.groupId===group1.id).length,0)
+})
+
+await test('destroy: destroyed a member/club will remove many-to-many (through embed array) relationship automatically', async () => {
+
 
   reset()
-  prevLength = Number(db.data?.[MEMBERS]?.length) || 0
+  let prevLength = Number(db.data?.[MEMBERS]?.length) || 0
   await service.destroyById(MEMBERS,member1.id)
   assert.equal(db.data[MEMBERS].length, prevLength - 1)
   
-  
-  // test destory a many-to-many side will automatically remove the destoryed item id
-  // from another side's id collection
-  // members contains a property of clubs (list) to establish 
-  // members to clubs' many-to-many rel.
   reset()
   prevLength = Number(db.data?.[CLUBS]?.length) || 0
   await service.destroyById(CLUBS,club1.id)

@@ -43,7 +43,7 @@ db.data = {
   groups:[{id:"1",name:"collegue"}],
   contacts_groups:[{id:"1",contactId:"1",groupId:"1"}],
 }
-const app = createApp(db, { static: [tmpDir] },false,'',false)
+const app = createApp(db, { static: [tmpDir] },false,'',false,"")
 
 await new Promise<void>((resolve, reject) => {
   try {

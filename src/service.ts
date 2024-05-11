@@ -334,22 +334,6 @@ export class Service {
       return items;
     }
 
-
-    // const foreignKey = (Object.keys(query).filter(k=>k.endsWith("Id"))||[])[0]
-    // if(foreignKey){
-    //   if(getProperty((items as Item[]||[])[0],foreignKey)===undefined){
-    //     const _name = inflection.pluralize(foreignKey.replace("Id",""))
-    //     console.log(_name,query[foreignKey],items,(items as Item[])[0]);
-    //     if(getProperty((items as Item[])[0],_name)!==undefined){
-    //       return (items as Item[])?.filter(item=>
-    //         (item[_name] as Array<string>).indexOf(query[foreignKey] as string)!==-1
-    //       )
-    //     }             
-    //   }
-    // }
-    
-  
-
     // Convert query params to conditions
     const conds: Record<string, [Condition, string | string[]]> = {};
     for (const [key, value] of Object.entries(query)) {
