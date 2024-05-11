@@ -1,10 +1,14 @@
-POST http://localhost:3000/login
+POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
     "username": "user",
     "password": "pass"
 }
+
+###
+
+GET http://localhost:3000/contacts/1
 
 ### 
 GET http://localhost:3000/posts?_embed=comments
@@ -13,7 +17,7 @@ Authorization: Bearer 12dea96fec20593566ab75692c9949596833adc9
 GET http://localhost:3000/comments?_embed=post&_token=12dea96fec20593566ab75692c9949596833adc9
 
 ###
-GET http://localhost:3000/contacts?_embed=groups
+GET http://localhost:3000/api/v1/contacts?_embed=groups
 
 ###
 
@@ -22,7 +26,13 @@ GET http://localhost:3000/contacts?_embed=phones
 ### 
 GET http://localhost:3000/groups?_embed=contacts
 
+###
+GET http://localhost:3000/contacts?groupId=1
 
+
+
+###
+GET http://localhost:3000/comments?postId=1
 ###
 GET http://localhost:3000/members?_embed=clubs
 

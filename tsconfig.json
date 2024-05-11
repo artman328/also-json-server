@@ -1,5 +1,6 @@
 {
   "extends": "@sindresorhus/tsconfig",
+  "compileOnSave": true,
   "exclude": ["src/**/*.test.ts"],
   "compilerOptions": {
     "outDir": "./lib",

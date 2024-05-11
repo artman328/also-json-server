@@ -26,10 +26,13 @@ const eta = new Eta({
 export function createApp(
   db: Low<Data>,
   options: AppOptions = {},
-  auth: boolean
+  auth: boolean,
+  path: string,
+  object: boolean
 ) {
   // Create service
   const service = new Service(db);
+  service.return_object = object
 
   // Create app
   const app = new App();
@@ -142,7 +145,7 @@ export function createApp(
   // Body parser
   app.use(json());
 
-  app.post("/login", (req, res, _next) => {
+  app.post(`${path}/auth/login`, (req, res, _next) => {
     console.log(req.body);
     const username = req.body["username"]
     const password = req.body["password"]
@@ -166,7 +169,7 @@ export function createApp(
     res.send(eta.render("index.html", { data: db.data }))
   );
 
-  app.get("/:name", (req, res, next) => {
+  app.get(`${path}/:name`, (req, res, next) => {
     const { name = "" } = req.params;
     const query = Object.fromEntries(
       Object.entries(req.query)
@@ -186,13 +189,13 @@ export function createApp(
     next();
   });
 
-  app.get("/:name/:id", (req, res, next) => {
+  app.get(`${path}/:name/:id`, (req, res, next) => {
     const { name = "", id = "" } = req.params;
     res.locals["data"] = service.findById(name, id, req.query);
     next();
   });
 
-  app.post("/:name", async (req, res, next) => {
+  app.post(`${path}/:name`, async (req, res, next) => {
     const { name = "" } = req.params;
     if (isItem(req.body)) {
       res.locals["data"] = await service.create(name, req.body);
@@ -200,7 +203,7 @@ export function createApp(
     next();
   });
 
-  app.put("/:name", async (req, res, next) => {
+  app.put(`${path}/:name`, async (req, res, next) => {
     const { name = "" } = req.params;
     if (isItem(req.body)) {
       res.locals["data"] = await service.update(name, req.body);
@@ -208,7 +211,7 @@ export function createApp(
     next();
   });
 
-  app.put("/:name/:id", async (req, res, next) => {
+  app.put(`${path}/:name/:id`, async (req, res, next) => {
     const { name = "", id = "" } = req.params;
     if (isItem(req.body)) {
       res.locals["data"] = await service.updateById(name, id, req.body);
@@ -216,7 +219,7 @@ export function createApp(
     next();
   });
 
-  app.patch("/:name", async (req, res, next) => {
+  app.patch(`${path}/:name`, async (req, res, next) => {
     const { name = "" } = req.params;
     if (isItem(req.body)) {
       res.locals["data"] = await service.patch(name, req.body);
@@ -224,7 +227,7 @@ export function createApp(
     next();
   });
 
-  app.patch("/:name/:id", async (req, res, next) => {
+  app.patch(`${path}/:name/:id`, async (req, res, next) => {
     const { name = "", id = "" } = req.params;
     if (isItem(req.body)) {
       res.locals["data"] = await service.patchById(name, id, req.body);
@@ -232,7 +235,7 @@ export function createApp(
     next();
   });
 
-  app.delete("/:name/:id", async (req, res, next) => {
+  app.delete(`${path}/:name/:id`, async (req, res, next) => {
     const { name = "", id = "" } = req.params;
     res.locals["data"] = await service.destroyById(
       name,
@@ -242,7 +245,7 @@ export function createApp(
     next();
   });
 
-  app.use("/:name", (req, res) => {
+  app.use(`${path}/:name`, (req, res) => {
     const { data } = res.locals;
     if (data === undefined) {
       res.sendStatus(404);

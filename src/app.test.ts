@@ -39,8 +39,11 @@ db.data = {
   posts: [{ id: '1', title: 'foo' }],
   comments: [{ id: '1', postId: '1' }],
   object: { f1: 'foo' },
+  contacts: [{id:"1",name:"Tracy",mobile:"(555)5417-0987"}],
+  groups:[{id:"1",name:"collegue"}],
+  contacts_groups:[{id:"1",contactId:"1",groupId:"1"}],
 }
-const app = createApp(db, { static: [tmpDir] })
+const app = createApp(db, { static: [tmpDir] },false,'',false)
 
 await new Promise<void>((resolve, reject) => {
   try {
@@ -64,6 +67,14 @@ await test('createApp', async (t) => {
   const OBJECT = '/object'
   const OBJECT_1 = '/object/1'
 
+  const CONTACTS = '/contacts'
+  const GROUPS = '/groups'
+  const CONTACTS_WITH_GROUPS = '/contacts?_embed=groups'
+  const GROUPS_WITH_CONTACTS = '/groups?_embed=contacts'
+  const CONTACT_WITH_GROUPS = '/contacts/1?_embed=groups'
+  const GROUP_WITH_CONTACTS = '/groups/1?_embed=contacts'
+
+
   const arr: Test[] = [
     // Static
     { method: 'GET', url: '/', statusCode: 200 },
@@ -84,6 +95,14 @@ await test('createApp', async (t) => {
     { method: 'GET', url: OBJECT, statusCode: 200 },
     { method: 'GET', url: OBJECT_1, statusCode: 404 },
     { method: 'GET', url: NOT_FOUND, statusCode: 404 },
+    { method: 'GET', url: CONTACTS, statusCode: 200},
+    { method: 'GET', url: GROUPS, statusCode: 200},
+    { method: 'GET', url: CONTACTS_WITH_GROUPS, statusCode: 200},
+    { method: 'GET', url: GROUPS_WITH_CONTACTS, statusCode: 200},
+    { method: 'GET', url: CONTACT_WITH_GROUPS, statusCode: 200},
+    { method: 'GET', url: GROUP_WITH_CONTACTS, statusCode: 200},
+  
+
 
     { method: 'POST', url: POSTS, statusCode: 201 },
     { method: 'POST', url: POST_1, statusCode: 404 },

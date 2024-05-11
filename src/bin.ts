@@ -22,6 +22,9 @@ Options:
   -p, --port <port>  Port (default: 3000)
   -h, --host <host>  Host (default: localhost)
   -s, --static <dir> Static files directory (multiple allowed)
+  --auth             Use authorization to access
+  --path             Add partial path to url to mimic versioning, like /api/v1
+  --object           Return result as an object with status code, message
   --help             Show this message
   --version          Show version number
 `)
@@ -33,6 +36,8 @@ function args(): {
   file: string
   port: number
   host: string
+  path: string
+  object: boolean
   static: string[]
 } {
   try {
@@ -50,6 +55,13 @@ function args(): {
           type: 'string',
           short: 'h',
           default: process.env['HOST'] ?? 'localhost',
+        },
+        path: {
+          type: 'string',
+          default: ''
+        },
+        object: {
+          type: 'boolean'
         },
         static: {
           type: 'string',
@@ -97,12 +109,18 @@ function args(): {
       help()
       process.exit()
     }
-
+    let path = ""
+    if((values.path as string).length>0){
+      path = (values.path as string).replace(/\/+$/, '');
+      if(!/^\/([a-zA-Z0-9\-/]+)$/.test(path)) throw new Error("Invalid Path Option!")
+    }
     // App args and options
     return {
       auth: values.auth as boolean,
       file: positionals[0] ?? '',
       port: parseInt(values.port as string),
+      path,
+      object: values.object as boolean,
       host: values.host as string,
       static: values.static as string[],
     }
@@ -117,7 +135,7 @@ function args(): {
   }
 }
 
-const { auth, file, port, host, static: staticArr } = args()
+const { auth, file, port, host, path, object, static: staticArr } = args()
 
 if (!existsSync(file)) {
   console.log(chalk.red(`File ${file} not found`))
@@ -145,7 +163,7 @@ const db = new Low<Data>(observer, {})
 await db.read()
 
 // Create app
-const app = createApp(db, { logger: false, static: staticArr },auth)
+const app = createApp(db, { logger: false, static: staticArr }, auth, path, object)
 
 function logRoutes(data: Data) {
   console.log(chalk.bold('Endpoints:'))
@@ -156,9 +174,10 @@ function logRoutes(data: Data) {
     return
   }
   console.log(
+    auth?`${chalk.gray(`http://${host}:${port}/${chalk.blue('auth/login')}`)}\n`:"",
     Object.keys(data)
       .map(
-        (key) => `${chalk.gray(`http://${host}:${port}/`)}${chalk.blue(key)}`,
+        (key) => `${chalk.gray(`http://${host}:${port}${path}/`)}${chalk.blue(key)}`,
       )
       .join('\n'),
   )
@@ -182,7 +201,7 @@ app.listen(port, () => {
       chalk.magenta(randomItem(kaomojis)),
       '',
       chalk.bold('Index:'),
-      chalk.gray(`http://localhost:${port}/`),
+      chalk.gray(`http://${host}:${port}/`),
       '',
       chalk.bold('Static files:'),
       chalk.gray('Serving ./public directory if it exists'),

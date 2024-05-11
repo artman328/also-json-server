@@ -7,7 +7,7 @@ This fork can handle many-to-many relationship in data.
 ## Install
 
 ```shell
-npm install also-json-server
+npm install -g also-json-server
 ```
 
 ## Usage
@@ -16,6 +16,20 @@ Create a `db.json` or `db.json5` file
 
 ```json
 {
+  "users": [
+    {
+      "id": "1",
+      "username": "User1",
+      "password": "UserPass1",
+      "token": "3604ab439517b1bc0161a8debd461d8461863b99"
+    },
+    {
+      "id": "2",
+      "username": "User2",
+      "password": "UserPass2",
+      "token": "aeabb98dde7f53034dc8946edb0816f3511dedf2"
+    }
+  ],
   "posts": [
     { "id": "1", "title": "a title", "views": 100 },
     { "id": "2", "title": "another title", "views": 200 }
@@ -74,6 +88,20 @@ Create a `db.json` or `db.json5` file
 
 ```json5
 {
+  users: [
+    {
+      id: "1",
+      username: "User1",
+      password: "UserPass1",
+      token: "3604ab439517b1bc0161a8debd461d8461863b99",
+    },
+    {
+      id: "2",
+      username: "User2",
+      password: "UserPass2",
+      token: "aeabb98dde7f53034dc8946edb0816f3511dedf2",
+    }
+  ],
   posts: [
     { id: "1", title: "a title", views: 100 },
     { id: "2", title: "another title", views: 200 },
@@ -148,6 +176,17 @@ $ curl http://localhost:3000/posts/1
 
 Run `also-json-server --help` for a list of options
 
+## Authorization
+
+Use --auth option to use authorization. You can bear a token with the header field "Authorization",
+like `Authorization: Bearer <token>`, or you can just add a query parameter "_token" like `_token=<token>` to send
+the token. The token can be returned after login successfully.
+
+When use --auth, the json data file should has a collection named "users", a user should has the properties of "id", "username", "password(plain text)" and "token(a string of any length)" .
+
+Use POST "/auth/login" to login to get a user's token.
+
+
 ## Routes
 
 Based on the example `db.json`, you'll get the following routes:
@@ -160,7 +199,7 @@ PUT    /posts/:id
 PATCH  /posts/:id
 DELETE /posts/:id
 
-# Same for comments
+# Same for other collections
 ```
 
 ```
@@ -228,19 +267,26 @@ GET /foo?arr[0]=bar
 ```
 # one to many: embed "many" side
 GET /posts?_embed=comments
+GET /posts/1?_embed=comments
+
 
 # one 2 many: embed "one" side
 GET /comments?_embed=post
 
-# many to many: through a list of ids of another side in one side (higher priority than an intermediate list)
+# many to many: through a list of ids of another side in one side
+# (higher priority than an intermediate list)
 GET /members?_embed=clubs
+GET /members/1?_embed=clubs
 GET /clubs?_embed=members
+GET /clubs/1?_embed=members
 
 # many to many: through an intermediate list
 # name can be "anyside_anyside", like "contacts_groups"
 # or "groups_contacts"
 GET /contacts?_embed=groups
+GET /contacts/1?_embed=groups
 GET /groups?_embed=contacts
+GET /groups/1?_embed=contacts
 
 
 ```
@@ -249,7 +295,14 @@ GET /groups?_embed=contacts
 
 ```
 DELETE /posts/1
+
+## delete 'many' side of one-to-many
 DELETE /posts/1?_dependent=comments
+
+## delete a record of many-to-many on any side
+## will remove the relationship automatically
+DELETE /contacts/1
+DELETE /clubs/2
 ```
 
 ## Serving static files
@@ -259,11 +312,11 @@ If you create a `./public` directory, JSON Serve will serve its content in addit
 You can also add custom directories using `-s/--static` option.
 
 ```sh
-json-server -s ./static
-json-server -s ./static -s ./node_modules
+also-json-server -s ./static
+also-json-server -s ./static -s ./node_modules
 ```
 
-## Notable differences with v0.17
+## Notable differences
 
 - `id` is always a string and will be generated for you if missing
 - use `_per_page` with `_page` instead of `_limit`for pagination
