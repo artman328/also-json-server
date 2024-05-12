@@ -24,6 +24,24 @@ export function isData(obj: unknown): obj is Record<string, Item[]> {
   );
 }
 
+export function isEmptyObject(obj: object): boolean {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      return false; // Object has at least one own property
+    }
+  }
+  return true; // Object has no own properties
+}
+
+export function idExists(items: Item[], id: string): boolean {
+  let exists = false;
+  for (let item of items) {
+    if (item["id"]?.toString() === id) exists = true;
+    break;
+  }
+  return exists;
+}
+
 enum Condition {
   lt = "lt",
   lte = "lte",
@@ -194,7 +212,7 @@ function deleteDependents(db: Low<Data>, name: string, dependents: string[]) {
 }
 
 function randomId(): string {
-  return randomBytes(2).toString("hex");
+  return randomBytes(4).toString("hex");
 }
 
 function fixItemsIds(items: Item[]) {
@@ -215,6 +233,14 @@ function fixAllItemsIds(data: Data) {
       fixItemsIds(value);
     }
   });
+}
+
+function makeIdString(item: Item) {
+  for (let key in item) {
+    if (item.hasOwnProperty(key) && (key.endsWith("Id") || key === "id")) {
+      item[key] = (item[key] as string).toString();
+    }
+  }
 }
 
 export class Service {
@@ -276,6 +302,48 @@ export class Service {
     };
   }
 
+  // return invalid relation's foreign key
+  invalidRels(item: Item): Record<string, unknown> {
+    let rels: Record<string, unknown> = {};
+    for (let key in item) {
+      if (item.hasOwnProperty(key) && key.endsWith("Id")) {
+        const relItems = this.#db.data[
+          inflection.pluralize(key.replace("Id", ""))
+        ] as Item[];
+
+        if (relItems === undefined) {  // referenced list not exists
+          rels[key] = item[key];
+        } 
+        else {  
+          let valid: boolean = false;
+          relItems.forEach((it) => {
+            if (it["id"] === item[key]) valid = true;
+          });
+          if (!valid) rels[key] = item[key]; // referenced id not exists
+        }
+      }
+      if (item.hasOwnProperty(key) && Array.isArray(item[key])) { // many to many 
+        const relItems = this.#db.data[key] as Item[];
+        if (relItems === undefined) {  // 
+          rels[key] = item[key];
+        }else{
+          let exists_ids :Array<string> = []
+          for(let it of relItems){
+            for(let id of item[key] as Array<string>){
+              if(it["id"]?.toString()===id.toString()){
+                exists_ids.push(id)
+              }
+            }
+          }
+          if(new Set(exists_ids).size !== (item[key] as Array<string>).length){
+            rels[key] = (item[key] as Array<string>).filter(it=>!exists_ids.includes(it))
+          }
+        }
+      }
+    }
+    return rels;
+  }
+
   findById(
     name: string,
     id: string,
@@ -290,12 +358,12 @@ export class Service {
       });
       if (item)
         return this.return_object
-          ? { code: 200, message: "Found", data: item }
+          ? { statusCode: 200, message: "Found", data: item }
           : item;
     }
 
     return this.return_object
-      ? { code: 404, message: "Not found", data: null }
+      ? { statusCode: 404, message: "Not found", data: null }
       : undefined;
   }
 
@@ -314,12 +382,16 @@ export class Service {
   ): Item[] | PaginatedItems | Item | undefined {
     let items = this.#get(name);
 
-    if (!Array.isArray(items)) {
-      return items;
+    if (items === undefined) {
+      return this.return_object
+        ? { statusCode: 404, message: "Not found", data: items }
+        : items;
     }
 
-    if(items.length===0 || items===undefined){
-      return items;
+    if (!Array.isArray(items) || items.length === 0) {
+      return this.return_object
+        ? { statusCode: 200, message: "Success", data: items }
+        : items;
     }
 
     // Include
@@ -331,7 +403,9 @@ export class Service {
 
     // Return list if no query params
     if (Object.keys(query).length === 0) {
-      return items;
+      return this.return_object
+        ? { statusCode: 200, message: "Success", data: items }
+        : items;
     }
 
     // Convert query params to conditions
@@ -444,13 +518,25 @@ export class Service {
     const limit = query._limit;
     if (start !== undefined) {
       if (end !== undefined) {
-        return sorted.slice(start, end);
+        return this.return_object
+          ? {
+              statusCode: 200,
+              message: "Success",
+              data: sorted.slice(start, end),
+            }
+          : sorted.slice(start, end);
       }
-      return sorted.slice(start, start + (limit || 0));
+      return this.return_object
+        ? {
+            statusCode: 200,
+            message: "Success",
+            data: sorted.slice(start, start + (limit || 0)),
+          }
+        : sorted.slice(start, start + (limit || 0));
     }
     if (limit !== undefined) {
       return this.return_object
-        ? { code: 200, message: "Success", data: sorted.slice(0, limit) }
+        ? { statusCode: 200, message: "Success", data: sorted.slice(0, limit) }
         : sorted.slice(0, limit);
     }
 
@@ -474,7 +560,7 @@ export class Service {
       const data = sorted.slice(start, end);
 
       return {
-        code: 200,
+        statusCode: 200,
         message: "Success",
         first,
         prev,
@@ -487,7 +573,7 @@ export class Service {
     }
 
     return this.return_object
-      ? { code: 200, message: "Success", data: sorted.slice(start, end) }
+      ? { statusCode: 200, message: "Success", data: sorted.slice(start, end) }
       : sorted.slice(start, end);
   }
 
@@ -495,15 +581,37 @@ export class Service {
     name: string,
     data: Omit<Item, "id"> = {}
   ): Promise<Item | undefined> {
+    makeIdString(data);
     const items = this.#get(name);
-    if (items === undefined || !Array.isArray(items)) return;
+    if (items === undefined) return { statusCode: 404, message: "Not found" };
+    if (!Array.isArray(items))
+      return { statusCode: 400, message: "Bad request: not for an object" };
+
+    if(idExists(items,data["id"] as string))
+      return {statusCode: 400, message: `Bad request: id ('${data["id"]}') exists`, data}
+
+    const invalid_rels = this.invalidRels(data);
+    let msg = "";
+    if (!isEmptyObject(invalid_rels)) {
+      for (let key in invalid_rels) {
+        if (invalid_rels.hasOwnProperty(key)) {
+          msg += `${key}: ${invalid_rels[key]}, `;
+        }
+      }
+      msg = msg.substring(0,msg.length-2)
+      return {
+        statusCode: 400,
+        message: `Bad request: invalid references [ ${msg} ]`,
+        data
+      };
+    }
 
     const item = { id: randomId(), ...data };
     items.push(item);
 
     await this.#db.write();
     return this.return_object
-      ? { code: 201, message: "Record created.", data: item }
+      ? { statusCode: 201, message: "Record created", data: item }
       : item;
   }
 
@@ -514,13 +622,13 @@ export class Service {
   ): Promise<Item | undefined> {
     const item = this.#get(name);
     // only for an object, not for a list
-    if (item === undefined || Array.isArray(item)) return;
-
+    if (item === undefined || Array.isArray(item))
+      return { statusCode: 404, message: "Not found", data: null };
     const nextItem = (this.#db.data[name] = isPatch ? { item, ...body } : body);
 
     await this.#db.write();
     return this.return_object
-      ? { code: 200, message: "Update success", data: nextItem }
+      ? { StatusCode: 200, message: "Update success", data: nextItem }
       : nextItem;
   }
 
@@ -531,20 +639,29 @@ export class Service {
     isPatch: boolean
   ): Promise<Item | undefined> {
     const items = this.#get(name);
-    if (items === undefined || !Array.isArray(items)) return;
+    if (items === undefined || !Array.isArray(items))
+      return { statusCode: 404, message: "Not found", data: null };
 
     const item = items.find((item) => item["id"] === id);
-    if (!item) return;
+    if (!item) return { statusCode: 404, message: "Not found", data: null };
 
-    // Object.entries(body).forEach((k,v)=>{
-    //   if(Array.isArray(v)){
-    //     Object.entries(this.#db.data).forEach((name,_items)=>{
-    //       if(name===k){
+    makeIdString(body)
 
-    //       }
-    //     })
-    //   }
-    // })
+    const invalid_rels = this.invalidRels(body);
+    let msg = "";
+    if (!isEmptyObject(invalid_rels)) {
+      for (let key in invalid_rels) {
+        if (invalid_rels.hasOwnProperty(key)) {
+          msg += `${key}: ${invalid_rels[key]}, `;
+        }
+      }
+      msg = msg.substring(0,msg.length-2)
+      return {
+        statusCode: 400,
+        message: `Bad request: invalid references [ ${msg} ]`,
+        data: body
+      };
+    }
 
     const nextItem = isPatch ? { ...item, ...body, id } : { ...body, id };
     const index = items.indexOf(item);
@@ -552,7 +669,7 @@ export class Service {
 
     await this.#db.write();
     return this.return_object
-      ? { code: 200, message: "Update success", data: nextItem }
+      ? { statusCode: 200, message: "Update success", data: nextItem }
       : nextItem;
   }
 
@@ -586,10 +703,12 @@ export class Service {
     dependent?: string | string[]
   ): Promise<Item | undefined> {
     const items = this.#get(name);
-    if (items === undefined || !Array.isArray(items)) return;
+    if (items === undefined || !Array.isArray(items))
+      return { statusCode: 404, message: "Not found", data: null };
 
     const item = items.find((item) => item["id"] === id);
-    if (item === undefined) return;
+    if (item === undefined)
+      return { statusCode: 404, message: "Not found", data: null };
     const index = items.indexOf(item);
     items.splice(index, 1)[0];
 
@@ -603,7 +722,21 @@ export class Service {
 
     await this.#db.write();
     return this.return_object
-      ? { code: 200, message: "Delete success", data: item }
+      ? { statusCode: 200, message: "Delete success", data: item }
       : item;
+  }
+
+  async destroyObject(name: string) {
+    const item = this.#get(name);
+    // only for an object, not for a list
+    if (item === undefined || Array.isArray(item))
+      return { statusCode: 404, message: "Not found", data: null };
+    const ret_item = structuredClone(item);
+    delete this.#db.data[name];
+
+    await this.#db.write();
+    return this.return_object
+      ? { statusCode: 200, message: "Delete success", data: ret_item }
+      : ret_item;
   }
 }

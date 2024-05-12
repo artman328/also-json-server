@@ -8,7 +8,7 @@ import { Low } from "lowdb";
 import { json } from "milliparsec";
 import sirv from "sirv";
 
-import { Data, isItem, Service } from "./service.js";
+import { Data, isItem, Service, isEmptyObject } from "./service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env["NODE_ENV"] === "production";
@@ -42,7 +42,6 @@ export function createApp(
   const app = new App();
 
  
-
     
   app.use((_req, _res, next)=>{
     let sleep_time = 0
@@ -111,6 +110,9 @@ export function createApp(
       msg: "Unauthorized",
     });
   }
+
+  
+
   
 
   // Static files
@@ -166,52 +168,84 @@ export function createApp(
         .filter(([_, value]) => !Number.isNaN(value))
     );
     res.locals["data"] = service.find(name, query);
+    const statusCode = (res.locals["data"]||{})["statusCode"]
+    if(statusCode) res.statusCode = statusCode
     next();
   });
 
   app.get(`${path}/:name/:id`, (req, res, next) => {
     const { name = "", id = "" } = req.params;
     res.locals["data"] = service.findById(name, id, req.query);
+    const statusCode = (res.locals["data"]||{})["statusCode"]
+    if(statusCode) res.statusCode = statusCode
     next();
   });
 
   app.post(`${path}/:name`, async (req, res, next) => {
     const { name = "" } = req.params;
-    if (isItem(req.body)) {
+    // console.log("Body:",req.body);
+    
+    if (isItem(req.body) && !isEmptyObject(req.body)) {
       res.locals["data"] = await service.create(name, req.body);
+      const statusCode = (res.locals["data"]||{})["statusCode"]
+      if(statusCode) res.statusCode = statusCode
+      if(res.statusCode===200) res.statusCode = 201
     }
+    // console.log("Code:", res.statusCode);
+    
     next();
   });
 
   app.put(`${path}/:name`, async (req, res, next) => {
     const { name = "" } = req.params;
-    if (isItem(req.body)) {
+    if (isItem(req.body) && !isEmptyObject(req.body)) {
       res.locals["data"] = await service.update(name, req.body);
+      const statusCode = (res.locals["data"]||{})["statusCode"]
+      if(statusCode) res.statusCode = statusCode
     }
     next();
   });
 
   app.put(`${path}/:name/:id`, async (req, res, next) => {
     const { name = "", id = "" } = req.params;
-    if (isItem(req.body)) {
+    if (isItem(req.body) && !isEmptyObject(req.body)) {
       res.locals["data"] = await service.updateById(name, id, req.body);
+      const statusCode = (res.locals["data"]||{})["statusCode"]
+      if(statusCode) res.statusCode = statusCode
     }
     next();
   });
 
   app.patch(`${path}/:name`, async (req, res, next) => {
     const { name = "" } = req.params;
-    if (isItem(req.body)) {
+    if (isItem(req.body) && !isEmptyObject(req.body)) {
       res.locals["data"] = await service.patch(name, req.body);
+      const statusCode = (res.locals["data"]||{})["statusCode"]
+      if(statusCode) res.statusCode = statusCode
     }
     next();
   });
 
   app.patch(`${path}/:name/:id`, async (req, res, next) => {
     const { name = "", id = "" } = req.params;
-    if (isItem(req.body)) {
+    if (isItem(req.body) && !isEmptyObject(req.body)) {
       res.locals["data"] = await service.patchById(name, id, req.body);
+      const statusCode = (res.locals["data"]||{})["statusCode"]
+      if(statusCode) res.statusCode = statusCode
     }
+    next();
+  });
+
+  app.delete(`${path}/:name`, async (req, res, next) => {
+    const { name = ""} = req.params;
+     const result = await service.destroyObject(
+      name
+    );
+    if((result || {})["statusCode"]==404){
+      res.status(404).locals["data"] = result
+    }else{
+      res.locals["data"] = result
+    }   
     next();
   });
 
@@ -222,17 +256,25 @@ export function createApp(
       id,
       req.query["_dependent"]
     );
+    const statusCode = (res.locals["data"]||{})["statusCode"]
+    if(statusCode) res.statusCode = statusCode
     next();
   });
 
   app.use(`${path}/:name`, (req, res) => {
+    if((req.method==="PUT" || req.method==="POST" || req.method==="PATCH") && 
+    (!isItem(req.body) || isEmptyObject(req.body))){
+      res.status(400).json({
+        statusCode: 400,
+        message: "Bad request: no data provided"
+      })
+      return
+    }
     const { data } = res.locals;
     if (data === undefined) {
-      res.sendStatus(404);
-    } else {
-      if (req.method === "POST") res.status(201);
-      res.json(data);
+      res.statusCode=404;
     }
+    res.json(data)
   });
 
   return app;

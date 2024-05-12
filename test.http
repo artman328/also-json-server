@@ -36,6 +36,62 @@ http://{{url}}/comments
 ### 6. Get Comments with the target Post (embeded)
 GET http://{{url}}/comments?_embed=post
 
+### 7. Create a post with an exists Id
+POST http://{{url}}/posts
+Content-Type: application/json
+
+{"id":1, "title":"my new post", "views": 0}
+
+### 8. Create a post with a non-exists Id
+POST http://{{url}}/posts
+Content-Type: application/json
+
+{"id":3, "title":"my new post", "views": 0}
+
+### 9. Pactch the newly added post
+PATCH http://{{url}}/posts/3
+Content-Type: application/json
+
+{"views": 1}
+
+### 10. Put the newly added post
+PUT http://{{url}}/posts/3
+Content-Type: application/json
+
+{"title": "My New Post"}
+
+### 11. Create a comment with invalid foreign key
+POST http://{{url}}/comments
+Content-Type: application/json
+
+{"id":"3", "text":"comment on post 3", "postId":"30"}
+
+### 12. Create a comment with a valid foreign key
+POST http://{{url}}/comments
+Content-Type: application/json
+
+{"id":"3", "text":"comment on post 3", "postId":"3"}
+
+### 13. Update (PATCH) the comment to an invalid foreign key
+PATCH http://{{url}}/comments/3
+Content-Type: application/json
+
+{"postId":"50"}
+
+### 14. Update (PUT) the comment to an invalid foreign key
+PUT http://{{url}}/comments/3
+Content-Type: application/json
+
+{"text":"Good Post!","postId":"50"}
+
+### 15. Delete a post will remove the one to many relationship
+# _dependent make the related comments deleted
+# without it, the related comments' foreignkeys will be set to null 
+DELETE http://{{url}}/posts/3?_dependent=comments
+
+### 16. Confirm all comments on post 3 are all gone
+GET http://{{url}}/comments?postId=3
+
 
 
 # ----------------------------------------------------------
@@ -83,7 +139,20 @@ GET http://{{url}}/groups/1
 ### 8. Get a Group with the Contacts in it (embeded)
 GET http://{{url}}/groups/1?_embed=contacts
 
-### 9. 
+### 9. Create a 
+
+
+
+# ------------------- To remove a relationship ---------------- 
+### 9.1 Get the replation "bridge" from intermediate collection
+# @name  q_inter
+GET http://{{url}}/contacts_groups?contactId=1&groupId=1
+
+### 9.2 Remove a relation between two objects
+@id = {{q_inter.response.body.$[0].id}}
+DELETE http://{{url}}/contacts_groups/{{id}}
+
+# -------------------------------------------------------------
 
 
 # ------------------------------------------------------
@@ -123,8 +192,17 @@ GET http://{{url}}/clubs
 Get http://{{url}}/clubs?_embed=members
 
 ### 7. Get a Club
-GET http://{{url}}/clubs/1
+GET http://{{url}}/clubs/1000
 
 ### 8. Get a Club with its Members (embeded)
 GET http://{{url}}/clubs/1?_embed=members
+
+
+
+###
+put http://{{url}}/comments/1
+Content-Type: application/json
+
+{"id":"4","text":"the text","postId":20,"clubs":["1","30"]}
+
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --max-old-space-size=4096
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { extname } from "node:path";
 import { parseArgs } from "node:util";

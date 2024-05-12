@@ -13,7 +13,8 @@ import { Data } from './service.js'
 type Test = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   method: HTTPMethods
-  url: string
+  url: string,
+  body?: object, 
   statusCode: number
 }
 
@@ -104,30 +105,36 @@ await test('createApp', async (t) => {
   
 
 
-    { method: 'POST', url: POSTS, statusCode: 201 },
-    { method: 'POST', url: POST_1, statusCode: 404 },
-    { method: 'POST', url: POST_NOT_FOUND, statusCode: 404 },
-    { method: 'POST', url: OBJECT, statusCode: 404 },
-    { method: 'POST', url: OBJECT_1, statusCode: 404 },
-    { method: 'POST', url: NOT_FOUND, statusCode: 404 },
+    { method: 'POST', url: POSTS, body:{title:"post title"}, statusCode: 201 },
+    { method: 'POST', url: POSTS, body:{}, statusCode: 400 },
+    { method: 'POST', url: POSTS, statusCode: 400 },
+    { method: 'POST', url: POST_1, body:{title:"post title"}, statusCode: 404 },
+    { method: 'POST', url: POST_NOT_FOUND, body:{title:"post title"}, statusCode: 404 },
+    { method: 'POST', url: OBJECT, body:{title:"post title"}, statusCode: 400 },
+    { method: 'POST', url: OBJECT_1, body:{title:"post title"}, statusCode: 404 },
+    { method: 'POST', url: NOT_FOUND, body:{title:"post title"}, statusCode: 404 },
 
-    { method: 'PUT', url: POSTS, statusCode: 404 },
-    { method: 'PUT', url: POST_1, statusCode: 200 },
-    { method: 'PUT', url: OBJECT, statusCode: 200 },
-    { method: 'PUT', url: OBJECT_1, statusCode: 404 },
-    { method: 'PUT', url: POST_NOT_FOUND, statusCode: 404 },
-    { method: 'PUT', url: NOT_FOUND, statusCode: 404 },
+    { method: 'PUT', url: POSTS, body:{title:"post title"}, statusCode: 404 },
+    { method: 'PUT', url: POSTS, body:{}, statusCode: 400 },
+    { method: 'PUT', url: POSTS, statusCode: 400 },
+    { method: 'PUT', url: POST_1, body:{title:"post title"}, statusCode: 200 },
+    { method: 'PUT', url: OBJECT, body:{title:"post title"}, statusCode: 200 },
+    { method: 'PUT', url: OBJECT_1, body:{title:"post title"}, statusCode: 404 },
+    { method: 'PUT', url: POST_NOT_FOUND, body:{title:"post title"}, statusCode: 404 },
+    { method: 'PUT', url: NOT_FOUND, body:{title:"post title"}, statusCode: 404 },
 
-    { method: 'PATCH', url: POSTS, statusCode: 404 },
-    { method: 'PATCH', url: POST_1, statusCode: 200 },
-    { method: 'PATCH', url: OBJECT, statusCode: 200 },
-    { method: 'PATCH', url: OBJECT_1, statusCode: 404 },
-    { method: 'PATCH', url: POST_NOT_FOUND, statusCode: 404 },
-    { method: 'PATCH', url: NOT_FOUND, statusCode: 404 },
+    { method: 'PATCH', url: POSTS, body:{title:"post title"}, statusCode: 404 },
+    { method: 'PATCH', url: POSTS, body:{}, statusCode: 400 },
+    { method: 'PATCH', url: POSTS, statusCode: 400 },
+    { method: 'PATCH', url: POST_1, body:{title:"post title"}, statusCode: 200 },
+    { method: 'PATCH', url: OBJECT, body:{title:"post title"}, statusCode: 200 },
+    { method: 'PATCH', url: OBJECT_1, body:{title:"post title"}, statusCode: 404 },
+    { method: 'PATCH', url: POST_NOT_FOUND, body:{title:"post title"}, statusCode: 404 },
+    { method: 'PATCH', url: NOT_FOUND, body:{title:"post title"}, statusCode: 404 },
 
     { method: 'DELETE', url: POSTS, statusCode: 404 },
     { method: 'DELETE', url: POST_1, statusCode: 200 },
-    { method: 'DELETE', url: OBJECT, statusCode: 404 },
+    { method: 'DELETE', url: OBJECT, statusCode: 200 },
     { method: 'DELETE', url: OBJECT_1, statusCode: 404 },
     { method: 'DELETE', url: POST_NOT_FOUND, statusCode: 404 },
     { method: 'DELETE', url: NOT_FOUND, statusCode: 404 },
@@ -135,9 +142,18 @@ await test('createApp', async (t) => {
 
   for (const tc of arr) {
     await t.test(`${tc.method} ${tc.url}`, async () => {
-      const response = await fetch(`http://localhost:${port}${tc.url}`, {
-        method: tc.method,
-      })
+      let response:Response
+      if(tc.method==="GET"){
+        response = await fetch(`http://localhost:${port}${tc.url}`, {
+          method: tc.method,
+        })        
+      }else{
+        response = await fetch(`http://localhost:${port}${tc.url}`, {
+          method: tc.method,
+          headers:{'Content-type':"application/json"},
+          body: JSON.stringify(tc.body)
+        })       
+      }      
       assert.equal(
         response.status,
         tc.statusCode,
