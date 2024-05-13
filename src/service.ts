@@ -72,7 +72,7 @@ function ensureArray(arg: string | string[] = []): string[] {
 }
 
 function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
-  if (inflection.singularize(related) === related) {
+  if (inflection.singularize(related) === related) { // like ?_embed=post
     const relatedData = db.data[inflection.pluralize(related)] as Item[];
     if (!relatedData) {
       return item;
@@ -83,6 +83,7 @@ function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
     });
     return { ...item, [related]: relatedItem };
   }
+  
   // many-2-many: Try to get ${related} property in ${name}
   const relatedProperty = `${related}`;
   if (item[relatedProperty] && Array.isArray(item[relatedProperty])) {
@@ -370,6 +371,8 @@ export class Service {
   ): Item[] | PaginatedItems | Item | undefined {
     let items = this.#get(name);
     //console.log("maxId:",getAvailableId(items as Item[]));
+
+    
 
     if (items === undefined) {
       return this.return_object
