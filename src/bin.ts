@@ -37,38 +37,38 @@ Options:
 const test_data = {
   users: [
     {
-      id: "1",
+      id: 1,
       username: "User1",
       password: "UserPass1",
       token: "3604ab439517b1bc0161a8debd461d8461863b99",
     },
     {
-      id: "2",
+      id: 2,
       username: "User2",
       password: "UserPass2",
       token: "aeabb98dde7f53034dc8946edb0816f3511dedf2",
     },
   ],
   posts: [
-    { id: "1", title: "a title", views: 100 },
-    { id: "2", title: "another title", views: 200 },
+    { id: 1, title: "a title", views: 100 },
+    { id: 2, title: "another title", views: 200 },
   ],
   comments: [
-    { id: "1", text: "a comment about post 1", postId: "1" },
-    { id: "2", text: "another comment about post 1", postId: "1" },
+    { id: 1, text: "a comment about post 1", postId: 1 },
+    { id: 2, text: "another comment about post 1", postId: 1 },
   ],
   contacts: [
-    { id: "1", name: "Tracy", mobile: "(555)1234-1256", groups:["1","2"] },
-    { id: "2", name: "Tina", mobile: "(555)2367-1287", groups:["1","3"] },
-    { id: "3", name: "Bill", mobile: "(555)2589-1134", groups:["1","2","3"] },
-    { id: "4", name: "Michael", mobile: "(555)3345-2345", groups:[] },
-    { id: "5", name: "Jackie", mobile: "(555)1123-1123", groups:[] },
+    { id: 1, name: "Tracy", mobile: "(555)1234-1256", groups:[1,2] },
+    { id: 2, name: "Tina", mobile: "(555)2367-1287", groups:[1,3] },
+    { id: 3, name: "Bill", mobile: "(555)2589-1134", groups:[1,2,3] },
+    { id: 4, name: "Michael", mobile: "(555)3345-2345", groups:[] },
+    { id: 5, name: "Jackie", mobile: "(555)1123-1123", groups:[] },
   ],
   groups: [
-    { id: "1", name: "Collegue" },
-    { id: "2", name: "Friend" },
-    { id: "3", name: "Family" },
-    { id: "4", name: "Business" },
+    { id: 1, name: "Collegue" },
+    { id: 2, name: "Friend" },
+    { id: 3, name: "Family" },
+    { id: 4, name: "Business" },
   ],
   profile: {
     name: "typicode",

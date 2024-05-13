@@ -8,7 +8,7 @@ import { Low } from "lowdb";
 import { json } from "milliparsec";
 import sirv from "sirv";
 
-import { Data, isItem, Service, isEmptyObject } from "./service.js";
+import { Data, isItem, Service, isEmptyObject} from "./service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env["NODE_ENV"] === "production";

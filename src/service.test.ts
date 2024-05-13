@@ -22,27 +22,27 @@ const UNKNOWN_RESOURCE = 'xxx'
 const UNKNOWN_ID = 'xxx'
 
 const post1 = {
-  id: '1',
+  id: 1,
   title: 'a',
   views: 100,
   author: { name: 'foo' },
   tags: ['foo', 'bar'],
 }
 const post2 = {
-  id: '2',
+  id: 2,
   title: 'b',
   views: 200,
   author: { name: 'bar' },
   tags: ['bar'],
 }
 const post3 = {
-  id: '3',
+  id: 3,
   title: 'c',
   views: 300,
   author: { name: 'baz' },
   tags: ['foo'],
 }
-const comment1 = { id: '1', title: 'a', postId: '1' }
+const comment1 = { id: 1, title: 'a', postId: 1 }
 const items = 3
 
 // contacts_groups:[
@@ -54,72 +54,72 @@ const items = 3
 // ],
 
 const contact1 = {
-  id: '1',
+  id: 1,
   name: 'Bill',
   mobile: '(555)1234-5678',
-  groups: ["1","2"]
+  groups: [1,2]
 }
 const contact2 = {
-  id: '2',
+  id: 2,
   name: 'Tracy',
   mobile: '(555)1234-1123',
-  groups: ["2"]  
+  groups: [2]  
 }
 const contact3 = {
-  id: '3',
+  id: 3,
   name: 'Tina',
   mobile: '(555)1234-9627',
   groups: []  
 }
 const contact4 = {
-  id: '4',
+  id: 4,
   name: 'Ben',
   mobile: '(555)1234-2389',
-  groups: ["1"]  
+  groups: [1]  
 }
 const contact5 = {
-  id: '5',
+  id: 5,
   name: 'Jack',
   mobile: '(555)1234-6145',
-  groups: ["2"] 
+  groups: [2] 
 }
 
 const contact_1 = {
-  id: '1',
+  id: 1,
   name: 'Bill',
   mobile: '(555)1234-5678'
 }
 const contact_2 = {
-  id: '2',
+  id: 2,
   name: 'Tracy',
   mobile: '(555)1234-1123'
 }
 const contact_3 = {
-  id: '3',
+  id: 3,
   name: 'Tina',
   mobile: '(555)1234-9627'
 }
 const contact_4 = {
-  id: '4',
+  id: 4,
   name: 'Ben',
   mobile: '(555)1234-2389'
 }
 const contact_5 = {
-  id: '5',
+  id: 5,
   name: 'Jack',
   mobile: '(555)1234-6145'
 }
 
 const group1 = {
-  id: '1',
+  id: 1,
   name: 'Collegue'
 }
 const group2 = {
-  id: '2',
+  id: 2,
   name: 'Friend'
 }
 const group3 = {
-  id: '3',
+  id: 3,
   name: 'Family'
 }
 
@@ -171,18 +171,18 @@ function reset() {
 }
 
 await test('constructor', () => {
-  const defaultData = { posts: [{ id: '1' }, {}], object: {} } satisfies Data
+  const defaultData = { posts: [{ id: 1 }, {}], object: {} } satisfies Data
   const db = new Low<Data>(adapter, defaultData)
   new Service(db)
   if (Array.isArray(db.data['posts'])) {
     const id0 = db.data['posts']?.at(0)?.['id']
     const id1 = db.data['posts']?.at(1)?.['id']
     assert.ok(
-      typeof id1 === 'string' && id1.length > 0,
-      `id should be a non empty string but was: ${String(id1)}`,
+      typeof id1 === 'number' && id1 === 2,
+      `id should be a number but was: ${String(id1)}`,
     )
     assert.ok(
-      typeof id0 === 'string' && id0 === '1',
+      typeof id0 === 'number' && id0 === 1,
       `id should not change if already set but was: ${String(id0)}`,
     )
   }
@@ -219,7 +219,7 @@ await test('find', async (t) => {
       },
       {
         name: POSTS,
-        params: { id: post1.id },
+        params: { id: post1.id.toString() },
         res: [post1],
       },
       {
@@ -442,7 +442,7 @@ await test('create', async () => {
   const post = { title: 'new post' }
   const res = await service.create(POSTS, post)
   assert.equal(res?.['title'], post.title)
-  assert.equal(typeof res?.['id'], 'string', 'id should be a string')
+  assert.equal(typeof res?.['id'], 'number', 'id should be a number')
 
   assert.deepEqual(await service.create(UNKNOWN_RESOURCE, post), {statusCode: 404, message:"Not found"})
 })
@@ -467,13 +467,13 @@ await test('update', async () => {
 
 await test('updateById', async () => {
   reset()
-  const post = { id: '1', title: 'updated post' }
-  const res = await service.updateById(POSTS, post1.id, post)
+  const post = { id: 1, title: 'updated post' }
+  const res = await service.updateById(POSTS, post1.id.toString(), post)
   assert.equal(res?.['id'], post1.id, 'id should not change')
   assert.equal(res?.['title'], post.title)
 
   assert.deepEqual(
-    await service.updateById(UNKNOWN_RESOURCE, post1.id, post),
+    await service.updateById(UNKNOWN_RESOURCE, post1.id.toString(), post),
     { statusCode: 404, message: 'Not found', data: null },
   )
   assert.deepEqual(await service.updateById(POSTS, UNKNOWN_ID, post), { statusCode: 404, message: 'Not found', data: null })
@@ -482,13 +482,13 @@ await test('updateById', async () => {
 await test('patchById', async () => {
   reset()
   const post = { id: '1', title: 'updated post' }
-  const res = await service.patchById(POSTS, post1.id, post)
+  const res = await service.patchById(POSTS, post1.id.toString(), post)
   assert.notEqual(res, undefined)
   assert.equal(res?.['id'], post1.id)
   assert.equal(res?.['title'], post.title)
 
   assert.deepEqual(
-    await service.patchById(UNKNOWN_RESOURCE, post1.id, post),
+    await service.patchById(UNKNOWN_RESOURCE, post1.id.toString(), post),
     { statusCode: 404, message: 'Not found', data: null },
   )
   assert.deepEqual(await service.patchById(POSTS, UNKNOWN_ID, post), { statusCode: 404, message: 'Not found', data: null })
@@ -497,34 +497,34 @@ await test('patchById', async () => {
 await test('destroy: destroyed a post will cause foreign keys in comments being set to null', async () => {
   reset()
   let prevLength = Number(db.data?.[POSTS]?.length) || 0
-  await service.destroyById(POSTS, post1.id)
+  await service.destroyById(POSTS, post1.id.toString())
   assert.equal(db.data?.[POSTS]?.length, prevLength - 1)
   assert.deepEqual(db.data?.[COMMENTS], [{ ...comment1, postId: null }])
 })
 await test('destroy: destroyed a post with dependents will delete related comments', async () => {
   reset()
   let prevLength = Number(db.data?.[POSTS]?.length) || 0
-  await service.destroyById(POSTS, post1.id, [COMMENTS])
+  await service.destroyById(POSTS, post1.id.toString(), [COMMENTS])
   assert.equal(db.data[POSTS].length, prevLength - 1)
   assert.equal(db.data[COMMENTS].length, 0)
 
-  assert.deepEqual(await service.destroyById(UNKNOWN_RESOURCE, post1.id), { statusCode: 404, message: 'Not found', data: null })
+  assert.deepEqual(await service.destroyById(UNKNOWN_RESOURCE, post1.id.toString()), { statusCode: 404, message: 'Not found', data: null })
   assert.deepEqual(await service.destroyById(POSTS, UNKNOWN_ID), { statusCode: 404, message: 'Not found', data: null })
 })
 await test('destroy: destroyed a contact/group will remove many-to-many relationship automatically', async () => {
   reset()
   let prevLength = Number(db.data?.[CONTACTS]?.length) || 0
-  await service.destroyById(CONTACTS,contact1.id)
+  await service.destroyById(CONTACTS,contact1.id.toString())
   assert.equal(db.data[CONTACTS].length, prevLength - 1)
 
 
   reset()
   prevLength = Number(db.data?.[GROUPS]?.length) || 0
-  await service.destroyById(GROUPS,group1.id)
+  await service.destroyById(GROUPS,group1.id.toString())
   assert.equal(db.data[GROUPS].length, prevLength - 1)
   let has_id = false;
   (db.data[CONTACTS] as Item[]).forEach(m=>{
-    if((m['groups'] as string[]).indexOf(group1.id)!==-1) has_id = true;
+    if((m['groups'] as string[]).indexOf(group1.id.toString())!==-1) has_id = true;
   })
   assert.equal(has_id,false)
 

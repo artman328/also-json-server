@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+//import { randomBytes } from "node:crypto";
 
 import { getProperty } from "dot-prop";
 import inflection from "inflection";
@@ -137,7 +137,7 @@ function nullifyForeignKey(db: Low<Data>, name: string, id: string) {
     // Nullify
     if (Array.isArray(items)) {
       items.forEach((item) => {
-        if (item[foreignKey] === id) {
+        if (item[foreignKey] === parseInt(id)) {
           item[foreignKey] = null;
         }
       });
@@ -148,10 +148,12 @@ function nullifyForeignKey(db: Low<Data>, name: string, id: string) {
 function deleteManyToManyRel(db: Low<Data>, name: string, id: string) {
   Object.entries(db.data).forEach(([_key, items]) => {
     if (Array.isArray(items)) {
-      let _ids: string[] = [];
+      let _ids: number[] = [];
       items.forEach((e: Item) => {
         if (e[name] && Array.isArray(e[name])) {
-          _ids = (e[name] as Array<string>).filter((_id) => _id !== id);
+          _ids = (e[name] as Array<number>).filter(
+            (_id) => _id !== parseInt(id)
+          );
           e[name] = _ids;
         }
       });
@@ -173,17 +175,36 @@ function deleteDependents(db: Low<Data>, name: string, dependents: string[]) {
   });
 }
 
-function randomId(): string {
-  return randomBytes(4).toString("hex");
+// function randomId(): string {
+//   return randomBytes(4).toString("hex");
+// }
+
+export function getAvailableId(items: Item[]) {
+  let _items = structuredClone(items);
+  if (_items === undefined || !Array.isArray(_items)) return 1;
+  _items.sort((a, b) => {
+    if ((a["id"] as number) > (b["id"] as number)) return 1;
+    if ((a["id"] as number) < (b["id"] as number)) return -1;
+    else return 0;
+  });
+  let last_item: Item;
+  let last_id: number = 0;
+  do {
+    last_item = _items.pop() as Item;
+  } while (_items.length>0 && last_item["id"] === undefined);
+  if (last_item) {
+    last_id = parseInt(last_item["id"] as string);
+  }
+  return last_id ? last_id + 1 : 1;
 }
 
 function fixItemsIds(items: Item[]) {
   items.forEach((item) => {
-    if (typeof item["id"] === "number") {
-      item["id"] = item["id"].toString();
+    if (typeof item["id"] === "string") {
+      item["id"] = parseInt(item["id"]) ? parseInt(item["id"]) : undefined;
     }
     if (item["id"] === undefined) {
-      item["id"] = randomId();
+      item["id"] = getAvailableId(items);
     }
   });
 }
@@ -197,13 +218,13 @@ function fixAllItemsIds(data: Data) {
   });
 }
 
-function makeIdString(item: Item) {
-  for (let key in item) {
-    if (item.hasOwnProperty(key) && (key.endsWith("Id") || key === "id")) {
-      item[key] = (item[key] as string).toString();
-    }
-  }
-}
+// function makeIdNumber(item: Item) {
+//   for (let key in item) {
+//     if (item.hasOwnProperty(key) && (key.endsWith("Id") || key === "id")) {
+//       item[key] = parseInt((item[key] as string));
+//     }
+//   }
+// }
 
 export class Service {
   #db: Low<Data>;
@@ -319,7 +340,7 @@ export class Service {
     const value = this.#get(name);
 
     if (Array.isArray(value)) {
-      let item = value.find((item) => item["id"] === id);
+      let item = value.find((item) => (item["id"] as number) === parseInt(id));
       ensureArray(query._embed).forEach((related) => {
         if (item !== undefined) item = embed(this.#db, name, item, related);
       });
@@ -348,6 +369,7 @@ export class Service {
     } = {}
   ): Item[] | PaginatedItems | Item | undefined {
     let items = this.#get(name);
+    //console.log("maxId:",getAvailableId(items as Item[]));
 
     if (items === undefined) {
       return this.return_object
@@ -548,7 +570,7 @@ export class Service {
     name: string,
     data: Omit<Item, "id"> = {}
   ): Promise<Item | undefined> {
-    makeIdString(data);
+    //makeIdString(data);
     const items = this.#get(name);
     if (items === undefined) return { statusCode: 404, message: "Not found" };
     if (!Array.isArray(items))
@@ -557,7 +579,7 @@ export class Service {
     if (idExists(items, data["id"] as string))
       return {
         statusCode: 400,
-        message: `Bad request: id ('${data["id"]}') exists`,
+        message: `Bad request: id (${data["id"]}) exists`,
         data,
       };
 
@@ -577,7 +599,7 @@ export class Service {
       };
     }
 
-    const item = { id: randomId(), ...data };
+    const item = { id: getAvailableId(items), ...data };
     items.push(item);
 
     await this.#db.write();
@@ -613,10 +635,10 @@ export class Service {
     if (items === undefined || !Array.isArray(items))
       return { statusCode: 404, message: "Not found", data: null };
 
-    const item = items.find((item) => item["id"] === id);
+    const item = items.find((item) => (item["id"] as number) === parseInt(id));
     if (!item) return { statusCode: 404, message: "Not found", data: null };
 
-    makeIdString(body);
+    //makeIdString(body);
 
     const invalid_rels = this.invalidRels(body);
     let msg = "";
@@ -634,7 +656,9 @@ export class Service {
       };
     }
 
-    const nextItem = isPatch ? { ...item, ...body, id } : { ...body, id };
+    const nextItem = isPatch
+      ? { ...item, ...body, id: parseInt(id) }
+      : { ...body, id: parseInt(id) };
     const index = items.indexOf(item);
     items.splice(index, 1, nextItem);
 
@@ -677,7 +701,7 @@ export class Service {
     if (items === undefined || !Array.isArray(items))
       return { statusCode: 404, message: "Not found", data: null };
 
-    const item = items.find((item) => item["id"] === id);
+    const item = items.find((item) => (item["id"] as number) === parseInt(id));
     if (item === undefined)
       return { statusCode: 404, message: "Not found", data: null };
     const index = items.indexOf(item);
