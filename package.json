@@ -1,6 +1,6 @@
 {
   "name": "also-json-server",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "A fork of json-server",
   "type": "module",
   "bin": {

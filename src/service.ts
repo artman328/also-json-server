@@ -111,35 +111,7 @@ function embed(db: Low<Data>, name: string, item: Item, related: string): Item {
       return { ...item, [related]: _items };
     }
   }
-
-  // Check if there is an intermediate table named like primary_related
-  const intermediateTable1 = `${name}_${related}`;
-  const intermediateTable2 = `${related}_${name}`;
-
-  let intermediateData = db.data[intermediateTable1] as Item[];
-  if (!intermediateData) {
-    intermediateData = db.data[intermediateTable2] as Item[];
-  }
-  if (intermediateData) {
-    // Get related items through the intermediate table
-    const relatedItems = intermediateData
-      .filter(
-        (intermediateItem: Item) =>
-          intermediateItem[`${inflection.singularize(name)}Id`] === item["id"]
-      )
-      .map((intermediateItem: Item) => {
-        // Find related item using related ID
-        const relatedItem = (db.data[related] as Item[]).find(
-          (relatedItem: Item) =>
-            relatedItem["id"] ===
-            intermediateItem[`${inflection.singularize(related)}Id`]
-        );
-        return relatedItem;
-      });
-    return { ...item, [related]: relatedItems };
-  }
-
-  // If there is no intermediate table, proceed with original logic
+  // proceed with original logic
   const relatedData = db.data[related] as Item[];
   if (!relatedData) {
     return item;
@@ -172,26 +144,15 @@ function nullifyForeignKey(db: Low<Data>, name: string, id: string) {
 }
 
 function deleteManyToManyRel(db: Low<Data>, name: string, id: string) {
-  Object.entries(db.data).forEach(([key, items]) => {
-    // through intermediate list
-    if (key.indexOf(`_${name}`) !== -1 || key.indexOf(`${name}_`) !== -1) {
-      if (Array.isArray(items)) {
-        db.data[key] = items.filter(
-          (item) => item[`${inflection.singularize(name)}Id`] !== null
-        );
-      }
-    }
-    // through embeded list
-    else {
-      if (Array.isArray(items)) {
-        let _ids: string[] = [];
-        items.forEach((e: Item) => {
-          if (e[name] && Array.isArray(e[name])) {
-            _ids = (e[name] as Array<string>).filter((_id) => _id !== id);
-            e[name] = _ids;
-          }
-        });
-      }
+  Object.entries(db.data).forEach(([_key, items]) => {
+    if (Array.isArray(items)) {
+      let _ids: string[] = [];
+      items.forEach((e: Item) => {
+        if (e[name] && Array.isArray(e[name])) {
+          _ids = (e[name] as Array<string>).filter((_id) => _id !== id);
+          e[name] = _ids;
+        }
+      });
     }
   });
 }
@@ -208,7 +169,6 @@ function deleteDependents(db: Low<Data>, name: string, dependents: string[]) {
       db.data[key] = items.filter((item) => item[foreignKey] !== null);
     }
   });
-  // todo: delete records from intermediate list (many-2-many)
 }
 
 function randomId(): string {
@@ -311,10 +271,10 @@ export class Service {
           inflection.pluralize(key.replace("Id", ""))
         ] as Item[];
 
-        if (relItems === undefined) {  // referenced list not exists
+        if (relItems === undefined) {
+          // referenced list not exists
           rels[key] = item[key];
-        } 
-        else {  
+        } else {
           let valid: boolean = false;
           relItems.forEach((it) => {
             if (it["id"] === item[key]) valid = true;
@@ -322,21 +282,26 @@ export class Service {
           if (!valid) rels[key] = item[key]; // referenced id not exists
         }
       }
-      if (item.hasOwnProperty(key) && Array.isArray(item[key])) { // many to many 
+      if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
+        // many to many
         const relItems = this.#db.data[key] as Item[];
-        if (relItems === undefined) {  // 
+        if (relItems === undefined) { 
           rels[key] = item[key];
-        }else{
-          let exists_ids :Array<string> = []
-          for(let it of relItems){
-            for(let id of item[key] as Array<string>){
-              if(it["id"]?.toString()===id.toString()){
-                exists_ids.push(id)
+        } else {
+          let exists_ids: Array<string> = [];
+          for (let it of relItems) {
+            for (let id of item[key] as Array<string>) {
+              if (it["id"]?.toString() === id.toString()) {
+                exists_ids.push(id);
               }
             }
           }
-          if(new Set(exists_ids).size !== (item[key] as Array<string>).length){
-            rels[key] = (item[key] as Array<string>).filter(it=>!exists_ids.includes(it))
+          if (
+            new Set(exists_ids).size !== (item[key] as Array<string>).length
+          ) {
+            rels[key] = (item[key] as Array<string>).filter(
+              (it) => !exists_ids.includes(it)
+            );
           }
         }
       }
@@ -587,8 +552,12 @@ export class Service {
     if (!Array.isArray(items))
       return { statusCode: 400, message: "Bad request: not for an object" };
 
-    if(idExists(items,data["id"] as string))
-      return {statusCode: 400, message: `Bad request: id ('${data["id"]}') exists`, data}
+    if (idExists(items, data["id"] as string))
+      return {
+        statusCode: 400,
+        message: `Bad request: id ('${data["id"]}') exists`,
+        data,
+      };
 
     const invalid_rels = this.invalidRels(data);
     let msg = "";
@@ -598,11 +567,11 @@ export class Service {
           msg += `${key}: ${invalid_rels[key]}, `;
         }
       }
-      msg = msg.substring(0,msg.length-2)
+      msg = msg.substring(0, msg.length - 2);
       return {
         statusCode: 400,
         message: `Bad request: invalid references [ ${msg} ]`,
-        data
+        data,
       };
     }
 
@@ -645,7 +614,7 @@ export class Service {
     const item = items.find((item) => item["id"] === id);
     if (!item) return { statusCode: 404, message: "Not found", data: null };
 
-    makeIdString(body)
+    makeIdString(body);
 
     const invalid_rels = this.invalidRels(body);
     let msg = "";
@@ -655,11 +624,11 @@ export class Service {
           msg += `${key}: ${invalid_rels[key]}, `;
         }
       }
-      msg = msg.substring(0,msg.length-2)
+      msg = msg.substring(0, msg.length - 2);
       return {
         statusCode: 400,
         message: `Bad request: invalid references [ ${msg} ]`,
-        data: body
+        data: body,
       };
     }
 

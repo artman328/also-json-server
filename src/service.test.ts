@@ -45,30 +45,69 @@ const post3 = {
 const comment1 = { id: '1', title: 'a', postId: '1' }
 const items = 3
 
+// contacts_groups:[
+//   {id:"1",contactId:"1",groupId:"1"},
+//   {id:"1",contactId:"1",groupId:"2"},
+//   {id:"1",contactId:"2",groupId:"2"},
+//   {id:"1",contactId:"4",groupId:"1"},
+//   {id:"1",contactId:"5",groupId:"2"},
+// ],
+
 const contact1 = {
   id: '1',
   name: 'Bill',
-  mobile: '(555)1234-5678'
+  mobile: '(555)1234-5678',
+  groups: ["1","2"]
 }
 const contact2 = {
   id: '2',
   name: 'Tracy',
-  mobile: '(555)1234-1123'  
+  mobile: '(555)1234-1123',
+  groups: ["2"]  
 }
 const contact3 = {
   id: '3',
   name: 'Tina',
-  mobile: '(555)1234-9627'  
+  mobile: '(555)1234-9627',
+  groups: []  
 }
 const contact4 = {
   id: '4',
   name: 'Ben',
-  mobile: '(555)1234-2389'  
+  mobile: '(555)1234-2389',
+  groups: ["1"]  
 }
 const contact5 = {
   id: '5',
   name: 'Jack',
-  mobile: '(555)1234-6145'  
+  mobile: '(555)1234-6145',
+  groups: ["2"] 
+}
+
+const contact_1 = {
+  id: '1',
+  name: 'Bill',
+  mobile: '(555)1234-5678'
+}
+const contact_2 = {
+  id: '2',
+  name: 'Tracy',
+  mobile: '(555)1234-1123'
+}
+const contact_3 = {
+  id: '3',
+  name: 'Tina',
+  mobile: '(555)1234-9627'
+}
+const contact_4 = {
+  id: '4',
+  name: 'Ben',
+  mobile: '(555)1234-2389'
+}
+const contact_5 = {
+  id: '5',
+  name: 'Jack',
+  mobile: '(555)1234-6145'
 }
 
 const group1 = {
@@ -84,22 +123,22 @@ const group3 = {
   name: 'Family'
 }
 
-const member1 = {id: "1", name:"Jackie",clubs:["1","3"]}
-const member2 = {id: "2", name:"Lexi",clubs:["2"]}
-const member3 = {id: "3", name:"Michael",clubs:["2","3"]}
-const member4 = {id: "4", name:"Billy",clubs:["1","2"]}
-const member5 = {id: "5", name:"Jane",clubs:["1"]}
+// const member1 = {id: "1", name:"Jackie",clubs:["1","3"]}
+// const member2 = {id: "2", name:"Lexi",clubs:["2"]}
+// const member3 = {id: "3", name:"Michael",clubs:["2","3"]}
+// const member4 = {id: "4", name:"Billy",clubs:["1","2"]}
+// const member5 = {id: "5", name:"Jane",clubs:["1"]}
 
-const member_1 = {id: "1", name:"Jackie"}
-const member_2 = {id: "2", name:"Lexi"}
-const member_3 = {id: "3", name:"Michael"}
-const member_4 = {id: "4", name:"Billy"}
-const member_5 = {id: "5", name:"Jane"}
+// const member_1 = {id: "1", name:"Jackie"}
+// const member_2 = {id: "2", name:"Lexi"}
+// const member_3 = {id: "3", name:"Michael"}
+// const member_4 = {id: "4", name:"Billy"}
+// const member_5 = {id: "5", name:"Jane"}
 
 
-const club1 = {id: "1", name:"Tennis"}
-const club2 = {id: "2", name: "Swiming"}
-const club3 = {id: "3", name: "Yuga"}
+// const club1 = {id: "1", name:"Tennis"}
+// const club2 = {id: "2", name: "Swiming"}
+// const club3 = {id: "3", name: "Yuga"}
 
 const obj = {
   f1: 'foo',
@@ -114,25 +153,19 @@ function reset() {
     comments: [comment1],
     contacts: [contact1,contact2,contact3,contact4,contact5],
     groups: [group1,group2,group3],
-    contacts_groups:[
-      {id:"1",contactId:"1",groupId:"1"},
-      {id:"1",contactId:"1",groupId:"2"},
-      {id:"1",contactId:"2",groupId:"2"},
-      {id:"1",contactId:"4",groupId:"1"},
-      {id:"1",contactId:"5",groupId:"2"},
-    ],
-    members: [
-      member1,
-      member2,
-      member3,
-      member4,
-      member5   
-    ],
-    clubs: [
-      club1,
-      club2,
-      club3
-    ],
+
+    // members: [
+    //   member1,
+    //   member2,
+    //   member3,
+    //   member4,
+    //   member5   
+    // ],
+    // clubs: [
+    //   club1,
+    //   club2,
+    //   club3
+    // ],
     object: obj,
   })
 }
@@ -385,31 +418,11 @@ await test('find', async (t) => {
         name: GROUPS,
         params: {_embed: "contacts"},
         res: [
-          {...group1,contacts:[contact1,contact4]},
-          {...group2,contacts:[contact1,contact2,contact5]},
+          {...group1,contacts:[contact_1,contact_4]},
+          {...group2,contacts:[contact_1,contact_2,contact_5]},
           {...group3,contacts:[]},
         ]
       },
-      {
-        name: MEMBERS,
-        params: {_embed: 'clubs'},
-        res:[
-          {...member1,clubs:[club1,club3]},
-          {...member2,clubs:[club2]},
-          {...member3,clubs:[club2,club3]},
-          {...member4,clubs:[club1,club2]},
-          {...member5,clubs:[club1]},
-        ]
-      },
-      {
-        name: CLUBS,
-        params: {_embed: 'members'},
-        res:[
-          {...club1,members:[member_1,member_4,member_5]},
-          {...club2,members:[member_2,member_3,member_4]},
-          {...club3,members:[member_1,member_3]},          
-        ]
-      }
     ]
   for (const tc of arr) {
     await t.test(`${tc.name} ${JSON.stringify(tc.params)}`, () => {
@@ -498,35 +511,22 @@ await test('destroy: destroyed a post with dependents will delete related commen
   assert.deepEqual(await service.destroyById(UNKNOWN_RESOURCE, post1.id), { statusCode: 404, message: 'Not found', data: null })
   assert.deepEqual(await service.destroyById(POSTS, UNKNOWN_ID), { statusCode: 404, message: 'Not found', data: null })
 })
-await test('destroy: destroyed a contact/group will remove many-to-many (intermediate table) relationship automatically', async () => {
+await test('destroy: destroyed a contact/group will remove many-to-many relationship automatically', async () => {
   reset()
   let prevLength = Number(db.data?.[CONTACTS]?.length) || 0
   await service.destroyById(CONTACTS,contact1.id)
   assert.equal(db.data[CONTACTS].length, prevLength - 1)
-  assert.equal((db.data['contacts_groups'] as Item[]).filter(e=>e.contactId===contact1.id).length,0)
+
 
   reset()
   prevLength = Number(db.data?.[GROUPS]?.length) || 0
   await service.destroyById(GROUPS,group1.id)
   assert.equal(db.data[GROUPS].length, prevLength - 1)
-  assert.equal((db.data['contacts_groups'] as Item[]).filter(e=>e.groupId===group1.id).length,0)
-})
-
-await test('destroy: destroyed a member/club will remove many-to-many (through embed array) relationship automatically', async () => {
-
-
-  reset()
-  let prevLength = Number(db.data?.[MEMBERS]?.length) || 0
-  await service.destroyById(MEMBERS,member1.id)
-  assert.equal(db.data[MEMBERS].length, prevLength - 1)
-  
-  reset()
-  prevLength = Number(db.data?.[CLUBS]?.length) || 0
-  await service.destroyById(CLUBS,club1.id)
-  assert.equal(db.data[CLUBS].length, prevLength - 1)
   let has_id = false;
-  (db.data[MEMBERS] as Item[]).forEach(m=>{
-    if((m['clubs'] as string[]).indexOf(club1.id)!==-1) has_id = true;
+  (db.data[CONTACTS] as Item[]).forEach(m=>{
+    if((m['groups'] as string[]).indexOf(group1.id)!==-1) has_id = true;
   })
   assert.equal(has_id,false)
+
 })
+
