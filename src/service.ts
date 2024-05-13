@@ -36,8 +36,10 @@ export function isEmptyObject(obj: object): boolean {
 export function idExists(items: Item[], id: string): boolean {
   let exists = false;
   for (let item of items) {
-    if (item["id"]?.toString() === id) exists = true;
-    break;
+    if (item["id"]?.toString() === id?.toString()) {
+      exists = true;
+      break;
+    }
   }
   return exists;
 }
@@ -285,7 +287,7 @@ export class Service {
       if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
         // many to many
         const relItems = this.#db.data[key] as Item[];
-        if (relItems === undefined) { 
+        if (relItems === undefined) {
           rels[key] = item[key];
         } else {
           let exists_ids: Array<string> = [];

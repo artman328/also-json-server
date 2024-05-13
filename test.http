@@ -206,3 +206,13 @@ Content-Type: application/json
 {"id":"4","text":"the text","postId":20,"clubs":["1","30"]}
 
 
+###
+POST http://{{url}}/contacts
+Content-Type: application/json
+
+{
+    "id": "5",
+    "name": "Jane Doe",
+    "mobile": "11111111",
+    "groups": [1,2,3]
+}
