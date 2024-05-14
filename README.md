@@ -34,14 +34,12 @@ Create your data file `<data_file_name>.json` or `<data_file_name>.json5` file l
     {
       "id": 1,
       "username": "User1",
-      "password": "UserPass1",
-      "token": "3604ab439517b1bc0161a8debd461d8461863b99"
+      "password": "UserPass1"
     },
     {
       "id": 2,
       "username": "User2",
-      "password": "UserPass2",
-      "token": "aeabb98dde7f53034dc8946edb0816f3511dedf2"
+      "password": "UserPass2"
     }
   ],
   "posts": [
@@ -96,14 +94,12 @@ Create your data file `<data_file_name>.json` or `<data_file_name>.json5` file l
     {
       id: 1,
       username: "User1",
-      password: "UserPass1",
-      token: "3604ab439517b1bc0161a8debd461d8461863b99",
+      password: "UserPass1"
     },
     {
       id: 2,
       username: "User2",
-      password: "UserPass2",
-      token: "aeabb98dde7f53034dc8946edb0816f3511dedf2",
+      password: "UserPass2"
     },
   ],
   posts: [
@@ -194,7 +190,7 @@ Use --auth option to use authorization. You can bear a token with the header fie
 like `Authorization: Bearer <token>`, or you can just add a query parameter "\_token" like `_token=<token>` to send
 the token. The token can be returned after login successfully.
 
-When use --auth, the json data file should has a collection named "users", a user should has the properties of "id", "username", "password(plain text)" and "token(a string of any length)" .
+When use --auth, the json data file should has a collection named "users", a user should has the properties of "id", "username", "password(plain text)".
 
 Use POST "/auth/login" to login to get a user's token.
 

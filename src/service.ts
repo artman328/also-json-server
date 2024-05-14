@@ -254,7 +254,7 @@ export class Service {
       const q_users = users.filter(
         (u) => u["username"] == username && u["password"] == password
       );
-      console.log("Q_Users:", q_users);
+      // console.log("Q_Users:", q_users);
       if (q_users.length > 0) {
         result = true;
         user = q_users[0] as Item;
@@ -270,7 +270,7 @@ export class Service {
     let result = false;
     let user: Item = {};
     const users = this.#db.data["users"] as Item[];
-    console.log("Users:", users);
+    // console.log("Users:", users);
 
     if (users) {
       const q_users = users.filter((u) => u["token"] === token);
