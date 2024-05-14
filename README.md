@@ -153,8 +153,9 @@ Get a REST API
 ```shell
 $ curl http://localhost:3000/posts/1
 {
-  "id": "1",
-  "title": "a title"
+  "id": 1,
+  "title": "a title",
+  "views": 100
 }
 ```
 
@@ -249,7 +250,7 @@ By default, requests will return just data.
 
 ```json
 [
-  {"id": "1", "name": "Lexi"},
+  {"id": 1, "name": "Lexi"},
   ...
 ]
 ```
@@ -261,7 +262,7 @@ You can use `--return-object` to tell the server to return an object with `statu
   "statusCode": 200,
   "message": "Success",
   "data": [
-    {"id": "1", "name": "Lexi"},
+    {"id": 1, "name": "Lexi"},
     ...
   ]
 }

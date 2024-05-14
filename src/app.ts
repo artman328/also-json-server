@@ -106,8 +106,8 @@ export function createApp(
   
   function unauthorizedResponse(res: Response) {
     res.status(401).send({
-      code: 401,
-      msg: "Unauthorized",
+      statusCode: 401,
+      message: "Unauthorized",
     });
   }
 
