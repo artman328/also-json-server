@@ -601,7 +601,7 @@ export class Service {
         data,
       };
     }
-
+    if(data["id"]) data["id"] = parseInt(data["id"] as string);
     const item = { id: getAvailableId(items), ...data };
     items.push(item);
 
@@ -638,7 +638,7 @@ export class Service {
     if (items === undefined || !Array.isArray(items))
       return { statusCode: 404, message: "Not found", data: null };
 
-    const item = items.find((item) => (item["id"] as number) === parseInt(id));
+    const item = items.find((item) => (parseInt(item["id"] as string)) === parseInt(id));
     if (!item) return { statusCode: 404, message: "Not found", data: null };
 
     //makeIdString(body);
@@ -704,7 +704,7 @@ export class Service {
     if (items === undefined || !Array.isArray(items))
       return { statusCode: 404, message: "Not found", data: null };
 
-    const item = items.find((item) => (item["id"] as number) === parseInt(id));
+    const item = items.find((item) => (parseInt(item["id"] as string)) === parseInt(id));
     if (item === undefined)
       return { statusCode: 404, message: "Not found", data: null };
     const index = items.indexOf(item);

@@ -144,7 +144,7 @@ GET http://{{url}}/groups/1?_embed=contacts
 POST http://{{url}}/contacts
 Content-Type: application/json
 
-{"name":"Smith", "mobile":"(666)1234-8976"}
+{"id":20,"name":"Smith", "mobile":"(666)1234-8976"}
 
 ### 10. Put the contact into groups of 1,3
 @id = {{addContact.response.body.$.data.id}}
@@ -165,7 +165,7 @@ GET http://{{url}}/groups/3?_embed=contacts
 
 
 ### 
-DELETE http://{{url}}/contacts/{{id}}
+DELETE http://{{url}}/contacts/1
 
 
 ### 
