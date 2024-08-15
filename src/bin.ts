@@ -214,9 +214,16 @@ const {
 
 let data_file = try_server ? "also-json-server-test-db.json5" : file;
 
+let watcher = watch(data_file);
 if (try_server) {
   try {
+    if (watcher) {
+      watcher.unwatch(data_file);
+    }
     fs.writeFileSync(data_file, JSON5.stringify(test_data, null, 4));
+    if (watcher) {
+      watcher.add(data_file);
+    }
   } catch (err) {
     console.error("Write test db file failed.", err);
     process.exit(1);

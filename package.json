@@ -1,6 +1,6 @@
 {
   "name": "also-json-server",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "A fork of json-server",
   "type": "module",
   "bin": {
@@ -16,6 +16,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/bin.ts fixtures/db.json",
+    "dev-t": "tsx watch src/bin.ts -t",
     "build": "rm -rf lib && tsc",
     "test": "node --import tsx/esm --test src/*.test.ts",
     "lint": "eslint src --ext .ts --ignore-path .gitignore",
