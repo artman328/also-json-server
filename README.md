@@ -33,14 +33,16 @@ Create your data file `<data_file_name>.json` or `<data_file_name>.json5` file l
   "users": [
     {
       "id": 1,
-      "username": "User1",
-      "password": "UserPass1"
+      "name": "Jhon Doe",
+      "email": "john@email.com",
+      "password": "JohnPass"
     },
     {
       "id": 2,
-      "username": "User2",
-      "password": "UserPass2"
-    }
+      "name": "Jane Doe",
+      "email": "jane@email.com",
+      "password": "JanePass"
+    },
   ],
   "posts": [
     { "id": 1, "title": "a title", "views": 100 },
@@ -93,13 +95,15 @@ Create your data file `<data_file_name>.json` or `<data_file_name>.json5` file l
   users: [
     {
       id: 1,
-      username: "User1",
-      password: "UserPass1"
+      name: "Jhon Doe",
+      email: "john@email.com",
+      password: "JohnPass"
     },
     {
       id: 2,
-      username: "User2",
-      password: "UserPass2"
+      name: "Jane Doe",
+      email: "jane@email.com",
+      password: "JanePass"
     },
   ],
   posts: [

@@ -16,6 +16,13 @@ import { createApp } from "./app.js";
 import { Observer } from "./observer.js";
 import { Data } from "./service.js";
 
+const pkg = JSON.parse(
+  readFileSync(
+    fileURLToPath(new URL("../package.json", import.meta.url)),
+    "utf-8"
+  )
+) as PackageJson;
+
 function help() {
   console.log(`Usage: also-json-server [options] <file>
 
@@ -38,13 +45,15 @@ const test_data = {
   users: [
     {
       id: 1,
-      username: "User1",
-      password: "UserPass1"
+      name: "Jhon Doe",
+      email: "john@email.com",
+      password: "JohnPass"
     },
     {
       id: 2,
-      username: "User2",
-      password: "UserPass2"
+      name: "Jane Doe",
+      email: "jane@email.com",
+      password: "JanePass"
     },
   ],
   posts: [
@@ -142,12 +151,6 @@ function args(): {
 
     // --version
     if (values.version) {
-      const pkg = JSON.parse(
-        readFileSync(
-          fileURLToPath(new URL("../package.json", import.meta.url)),
-          "utf-8"
-        )
-      ) as PackageJson;
       console.log(pkg.version);
       process.exit();
     }
@@ -303,7 +306,7 @@ function randomItem(items: string[]): string {
 app.listen(port, () => {
   console.log(
     [
-      chalk.bold(`Also JSON Server started on PORT :${port}`),
+      chalk.bold(`Also JSON Server (ver. ${pkg.version}) started on PORT :${port}`),
       chalk.gray(auth ? "Using auth..." : ""),
       chalk.gray("Press CTRL-C to stop"),
       chalk.gray(`Watching ${file}...`),

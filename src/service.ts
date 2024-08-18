@@ -246,13 +246,13 @@ export class Service {
     return Object.prototype.hasOwnProperty.call(this.#db?.data, name);
   }
 
-  login(username: string, password: string): Record<string, any> {
+  login(email: string, password: string): Record<string, any> {
     let result = false;
     let user: Item = {};
     const users = this.#db.data["users"] as Item[];
     if (users) {
       const q_users = users.filter(
-        (u) => u["username"] == username && u["password"] == password
+        (u) => u["email"] == email && u["password"] == password
       );
       // console.log("Q_Users:", q_users);
       if (q_users.length > 0) {
@@ -260,6 +260,7 @@ export class Service {
         user = q_users[0] as Item;
       }
     }
+    // this.user = user
     return {
       result,
       user,

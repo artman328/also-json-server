@@ -8,7 +8,7 @@ import { Low } from "lowdb";
 import { json } from "milliparsec";
 import sirv from "sirv";
 
-import { Data, isItem, Service, isEmptyObject} from "./service.js";
+import { Data, Item, isItem, Service, isEmptyObject} from "./service.js";
 import { createHash } from "crypto";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -93,7 +93,7 @@ export function createApp(
   function extractToken(req: Request) {
     const bearerToken = req.headers.authorization;
     
-    if (bearerToken && bearerToken.split(" ").length > 1) {
+    if (bearerToken && bearerToken.split(" ").length > 1 && bearerToken.split(" ")[0]?.toLowerCase() === "bearer") {
       return bearerToken.split(" ")[1];
     }
     
@@ -147,17 +147,17 @@ export function createApp(
 
   app.post(`${path}/auth/login`, async (req, res, _next) => {
     // console.log(req.body);
-    const username = req.body["username"]
+    const email = req.body["email"]
     const password = req.body["password"]
-    const retv = service.login(username,password)
+    const retv = service.login(email,password)
     if(retv["result"]){
       const user = retv["user"]
       const token = generateRandomSHA1Hash()
       const _result = await service.patchById("users",user["id"],{token})
       // console.log(_result);
-      
       if(_result!==undefined){
         const user = service.return_object?_result["data"]:_result
+        service.user = user as Item
         res.send({
           status_code: 200,
           user
@@ -185,9 +185,8 @@ export function createApp(
 
   
   app.get(`${path}/auth/logout`,async (_req,res)=>{
-    // console.log("User:",service.user);
-    
-    const result = await service.updateById("users",service.user?.["id"] as string,{username:service.user?.["username"],password:service.user?.["password"]})
+    console.log("User:",service.user);   
+    const result = await service.patchById("users",service.user?.["id"] as string,{token:null})
     if(result!==undefined){
       res.status(200).send({
         statusCode: 200,
