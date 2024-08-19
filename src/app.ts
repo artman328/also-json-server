@@ -218,7 +218,7 @@ export function createApp(
         })
         .filter(([_, value]) => !Number.isNaN(value))
     );
-    res.locals["data"] = service.find(name, query, req);
+    res.locals["data"] = service.find(name, query, req.url);
     const statusCode = (res.locals["data"]||{})["statusCode"]
     if(statusCode) res.statusCode = statusCode
     next();

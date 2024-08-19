@@ -1,6 +1,4 @@
 //import { randomBytes } from "node:crypto";
-import { Request } from "@tinyhttp/app";
-
 import { getProperty } from "dot-prop";
 import inflection from "inflection";
 import { Low } from "lowdb";
@@ -62,9 +60,13 @@ function isCondition(value: string): value is Condition {
 
 export type PaginatedItems = {
   first: number;
+  first_url: string | null
   prev: number | null;
+  prev_url: string | null;
   next: number | null;
+  next_url: string | null;
   last: number;
+  last_url: string | null;
   pages: number;
   items: number;
   data: Item[];
@@ -391,7 +393,7 @@ export class Service {
       _page?: number;
       _per_page?: number;
     } = {},
-    req: Request
+    reqUrl: string
   ): Item[] | PaginatedItems | Item | undefined {
     let items = this.#get(name);
     //console.log("maxId:",getAvailableId(items as Item[]));
@@ -530,15 +532,6 @@ export class Service {
               else {
                 if(!(v.includes(p))) return false;
               }
-
-              // if (
-              //   !(
-              //     typeof itemValue === "string" &&
-              //     itemValue.toLowerCase().includes((paramValue as string).toLowerCase())
-              //   )
-              // ) {
-              //   return false;
-              // }
               break;
             }
             // item=value
@@ -597,6 +590,7 @@ export class Service {
       const prev = page > 1 ? page - 1 : null;
       const next = page < pages ? page + 1 : null;
       const last = pages;
+      const current = page;
 
       const start = (page - 1) * perPage;
       const end = start + perPage;
@@ -606,14 +600,14 @@ export class Service {
         statusCode: 200,
         message: "Success",
         first,
-        first_rul: replacePartialUrlParam(req.url, "_page", "1"),
+        first_url: replacePartialUrlParam(reqUrl, "_page", first.toString()),
         prev,
-        prev_url: prev ? replacePartialUrlParam(req.url, "_page", prev.toString()) : null,
-        current: page,
+        prev_url: prev ? replacePartialUrlParam(reqUrl, "_page", prev.toString()) : null,
+        current,
         next,
-        next_url: next ? replacePartialUrlParam(req.url, "_page", next.toString()) : null,
+        next_url: next ? replacePartialUrlParam(reqUrl, "_page", next.toString()) : null,
         last,
-        last_url: replacePartialUrlParam(req.url, "_page", last.toString()),
+        last_url: replacePartialUrlParam(reqUrl, "_page", last.toString()),
         pages,
         items,
         data,

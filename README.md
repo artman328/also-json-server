@@ -308,7 +308,25 @@ GET /posts?_start=10&_limit=10
 - `per_page` (default = 10)
 
 ```
-GET /posts?_page=1&_per_page=25
+GET /posts?_page=5&_per_page=25
+{
+  "statusCode": 200,
+  "message": "Success",
+  "first": 1,
+  "first_url": "/posts?_page=1&_per_page=25",
+  "prev": 4,
+  "prev_url": "/posts?_page=4&_per_page=25",
+  "current": 5,
+  "next": 6,
+  "next_url": "/posts?_page=6&_per_page=25",
+  "last": 2,
+  "last_url": "/posts?_page=2&_per_page=2",
+  "pages": 9,
+  "items": 205,
+  "data": [
+    ...
+  ]
+}
 ```
 
 ### Sort

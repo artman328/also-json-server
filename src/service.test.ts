@@ -211,115 +211,136 @@ await test('find', async (t) => {
     name: string
     params?: Parameters<Service["find"]>[1]
     res: Item | Item[] | PaginatedItems | undefined
-    error?: Error
+    url: string
   }[] = [
       {
         name: POSTS,
         res: [post1, post2, post3],
+        url: ''
       },
       {
         name: POSTS,
         params: { id: post1.id.toString() },
         res: [post1],
+        url: ''
       },
       {
         name: POSTS,
         params: { id: UNKNOWN_ID },
         res: [],
+        url: ''
       },
       {
         name: POSTS,
         params: { views: post1.views.toString() },
         res: [post1],
+        url: ''
       },
       {
         name: POSTS,
         params: { 'author.name': post1.author.name },
         res: [post1],
+        url: ''
       },
       {
         name: POSTS,
         params: { 'tags[0]': 'foo' },
         res: [post1, post3],
+        url: ''
       },
       {
         name: POSTS,
         params: { id: UNKNOWN_ID, views: post1.views.toString() },
         res: [],
+        url: ''
       },
       {
         name: POSTS,
         params: { views_ne: post1.views.toString() },
         res: [post2, post3],
+        url: '',
       },
       {
         name: POSTS,
         params: { views_lt: (post1.views + 1).toString() },
         res: [post1],
+        url: ''
       },
       {
         name: POSTS,
         params: { views_lt: post1.views.toString() },
         res: [],
+        url: ''
       },
       {
         name: POSTS,
         params: { views_lte: post1.views.toString() },
         res: [post1],
+        url: ''
       },
       {
         name: POSTS,
         params: { views_gt: post1.views.toString() },
         res: [post2, post3],
+        url: ''
       },
       {
         name: POSTS,
         params: { views_gt: (post1.views - 1).toString() },
         res: [post1, post2, post3],
+        url: ''
       },
       {
         name: POSTS,
         params: { views_gte: post1.views.toString() },
         res: [post1, post2, post3],
+        url: ''
       },
       {
         data: { posts: [post3, post1, post2] },
         name: POSTS,
         params: { _sort: 'views' },
         res: [post1, post2, post3],
+        url: ''
       },
       {
         data: { posts: [post3, post1, post2] },
         name: POSTS,
         params: { _sort: '-views' },
         res: [post3, post2, post1],
+        url: ''
       },
       {
         data: { posts: [post3, post1, post2] },
         name: POSTS,
         params: { _sort: '-views,id' },
         res: [post3, post2, post1],
+        url: ''
       },
 
       {
         name: POSTS,
         params: { _start: 0, _end: 2 },
         res: [post1, post2],
+        url: ''
       },
       {
         name: POSTS,
         params: { _start: 1, _end: 3 },
         res: [post2, post3],
+        url: ''
       },
       {
         name: POSTS,
         params: { _start: 0, _limit: 2 },
         res: [post1, post2],
+        url: ''
       },
       {
         name: POSTS,
         params: { _start: 1, _limit: 2 },
         res: [post2, post3],
+        url: ''
       },
       {
         name: POSTS,
@@ -328,13 +349,19 @@ await test('find', async (t) => {
           statusCode: 200,
           message: "Success",
           first: 1,
-          last: 2,
+          first_url: '/posts?_page=1&_per_page=2',
           prev: null,
+          prev_url: null,
+          current: 1,
           next: 2,
+          next_url: '/posts?_page=2&_per_page=2',
+          last: 2,
+          last_url: '/posts?_page=2&_per_page=2',
           pages: 2,
-          items,
+          items: 3,
           data: [post1, post2],
         },
+        url: '/posts?_page=1&_per_page=2',
       },
       {
         name: POSTS,
@@ -342,14 +369,20 @@ await test('find', async (t) => {
         res: {
           statusCode: 200,
           message: "Success",
+          current: 2,
           first: 1,
+          first_url: '/posts?_page=1&_per_page=2',
           last: 2,
+          last_url: '/posts?_page=2&_per_page=2',
           prev: 1,
+          prev_url: '/posts?_page=1&_per_page=2',
           next: null,
+          next_url: null,
           pages: 2,
-          items,
+          items: 3,
           data: [post3],
         },
+        url: '/posts?_page=2&_per_page=2',
       },
       {
         name: POSTS,
@@ -357,14 +390,20 @@ await test('find', async (t) => {
         res: {
           statusCode: 200,
           message: "Success",
+          current: 2,
           first: 1,
+          first_url: '/posts?_page=1&_per_page=2',
           last: 2,
+          last_url: '/posts?_page=2&_per_page=2',
           prev: 1,
+          prev_url: '/posts?_page=1&_per_page=2',
           next: null,
+          next_url: null,
           pages: 2,
-          items,
+          items: 3,
           data: [post3],
         },
+        url: '/posts?_page=3&_per_page=2',
       },
       {
         name: POSTS,
@@ -372,14 +411,20 @@ await test('find', async (t) => {
         res: {
           statusCode: 200,
           message: "Success",
+          current: 2,
           first: 1,
+          first_url: '/posts?_page=1&_per_page=1',
           last: 3,
+          last_url: '/posts?_page=3&_per_page=1',
           prev: 1,
+          prev_url: '/posts?_page=1&_per_page=1',
           next: 3,
+          next_url: '/posts?_page=3&_per_page=1',
           pages: 3,
-          items,
+          items: 3,
           data: [post2],
         },
+        url: '/posts?_page=2&_per_page=1',
       },
       {
         name: POSTS,
@@ -389,19 +434,23 @@ await test('find', async (t) => {
           { ...post2, comments: [] },
           { ...post3, comments: [] },
         ],
+        url: '',
       },
       {
         name: COMMENTS,
         params: { _embed: ['post'] },
         res: [{ ...comment1, post: post1 }],
+        url: '',
       },
       {
         name: UNKNOWN_RESOURCE,
         res: undefined,
+        url: '',
       },
       {
         name: OBJECT,
         res: obj,
+        url: '',
       },
       {
         name: CONTACTS,
@@ -412,7 +461,8 @@ await test('find', async (t) => {
           {...contact3,groups:[]},
           {...contact4,groups:[group1]},
           {...contact5,groups:[group2]},
-        ]
+        ],
+        url: '',
       },
       {
         name: GROUPS,
@@ -421,7 +471,9 @@ await test('find', async (t) => {
           {...group1,contacts:[contact_1,contact_4]},
           {...group2,contacts:[contact_1,contact_2,contact_5]},
           {...group3,contacts:[]},
-        ]
+        ],
+        url: '',
+        
       },
     ]
   for (const tc of arr) {
@@ -432,7 +484,7 @@ await test('find', async (t) => {
         reset()
       }
 
-      assert.deepEqual(service.find(tc.name, tc.params), tc.res)
+      assert.deepEqual(service.find(tc.name, tc.params, tc.url), tc.res)
     })
   }
 })
