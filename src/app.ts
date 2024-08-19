@@ -1,7 +1,7 @@
 import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { App, Request, Response } from "@tinyhttp/app";
+import { App, Response, Request } from "@tinyhttp/app";
 import { cors } from "@tinyhttp/cors";
 import { Eta } from "eta";
 import { Low } from "lowdb";
@@ -218,7 +218,7 @@ export function createApp(
         })
         .filter(([_, value]) => !Number.isNaN(value))
     );
-    res.locals["data"] = service.find(name, query);
+    res.locals["data"] = service.find(name, query, req);
     const statusCode = (res.locals["data"]||{})["statusCode"]
     if(statusCode) res.statusCode = statusCode
     next();

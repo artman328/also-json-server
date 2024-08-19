@@ -278,9 +278,17 @@ You can use `--return-object` to tell the server to return an object with `statu
 - `gt` → `>`
 - `gte` → `>=`
 - `ne` → `!=`
+- `like` → `like`
 
 ```
 GET /posts?views_gt=9000
+
+# contains
+GET /contacts?name_like=bill
+# startsWith
+GET /contacts?name_like=bill*
+# endsWith
+GET /contacts?name_like=*bill
 ```
 
 ### Range

@@ -1,4 +1,5 @@
 //import { randomBytes } from "node:crypto";
+import { Request } from "@tinyhttp/app";
 
 import { getProperty } from "dot-prop";
 import inflection from "inflection";
@@ -50,7 +51,9 @@ enum Condition {
   gt = "gt",
   gte = "gte",
   ne = "ne",
-  default = "",
+  lk = "like",
+  like = "like",
+  default = ""
 }
 
 function isCondition(value: string): value is Condition {
@@ -227,6 +230,25 @@ function fixAllItemsIds(data: Data) {
 //   }
 // }
 
+function replacePartialUrlParam(partialUrl: string, paramName: string, newValue: string): string {
+  // Separate the path and the query string
+  const [path, queryString] = partialUrl.split('?');
+  
+  // If there is no query string, return the original path with the new parameter
+  if (!queryString) {
+      return `${path}?${paramName}=${newValue}`;
+  }
+  
+  // Create a URLSearchParams object from the query string
+  const params = new URLSearchParams(queryString);
+  
+  // Set the new value for the specified parameter
+  params.set(paramName, newValue);
+  
+  // Reconstruct the URL
+  return `${path}?${params.toString()}`;
+}
+
 export class Service {
   #db: Low<Data>;
 
@@ -368,7 +390,8 @@ export class Service {
       _limit?: number;
       _page?: number;
       _per_page?: number;
-    } = {}
+    } = {},
+    req: Request
   ): Item[] | PaginatedItems | Item | undefined {
     let items = this.#get(name);
     //console.log("maxId:",getAvailableId(items as Item[]));
@@ -407,7 +430,7 @@ export class Service {
       if (value === undefined || typeof value !== "string") {
         continue;
       }
-      const re = /_(lt|lte|gt|gte|ne)$/;
+      const re = /_(lt|lte|gt|gte|ne|like)$/;
       const reArr = re.exec(key);
       const op = reArr?.at(1);
       if (op && isCondition(op)) {
@@ -491,6 +514,33 @@ export class Service {
               if (!(itemValue != paramValue)) return false;
               break;
             }
+            case Condition.like: {
+              if(!(typeof itemValue === "string")) return false
+              const v = itemValue.toLowerCase();
+              const p = paramValue.toLowerCase();
+              if(p.startsWith("*") && p.endsWith("*")) {
+                if(!v.includes(p.substring(1, p.length - 1))) return false;
+              }
+              else if(p.startsWith("*")) {
+                if(!v.endsWith(p.substring(1))) return false;
+              }
+              else if(p.endsWith("*")) {
+                if(!v.startsWith(p.substring(0, p.length - 1))) return false;
+              }
+              else {
+                if(!(v.includes(p))) return false;
+              }
+
+              // if (
+              //   !(
+              //     typeof itemValue === "string" &&
+              //     itemValue.toLowerCase().includes((paramValue as string).toLowerCase())
+              //   )
+              // ) {
+              //   return false;
+              // }
+              break;
+            }
             // item=value
             case Condition.default: {
               if (!(itemValue == paramValue)) return false;
@@ -556,9 +606,14 @@ export class Service {
         statusCode: 200,
         message: "Success",
         first,
+        first_rul: replacePartialUrlParam(req.url, "_page", "1"),
         prev,
+        prev_url: prev ? replacePartialUrlParam(req.url, "_page", prev.toString()) : null,
+        current: page,
         next,
+        next_url: next ? replacePartialUrlParam(req.url, "_page", next.toString()) : null,
         last,
+        last_url: replacePartialUrlParam(req.url, "_page", last.toString()),
         pages,
         items,
         data,
