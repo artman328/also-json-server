@@ -156,9 +156,10 @@ export function createApp(
       const _result = await service.patchById("users",user["id"],{token})
       // console.log(_result);
       if(_result!==undefined){
-        const user = service.return_object?_result["data"]:_result
-        service.user = user as Item
-        res.send({
+        const user  = (service.return_object?_result["data"]:_result) as Item
+        delete user["password"]
+        service.user = user
+        res.status(200).send({
           status_code: 200,
           user
         })
@@ -171,7 +172,7 @@ export function createApp(
       }
     }
     else{
-      res.send({
+      res.status(401).send({
         status_code: 401,
         msg: "Unauthorized"
       });
